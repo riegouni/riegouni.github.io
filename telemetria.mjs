@@ -31,23 +31,42 @@ function cleanHistory(payload) {
   return { up: payload.up, ...Object.fromEntries(series.map(key => [key, payload[key].slice(-300).map(reading)])) };
 }
 
+function describeMqttError(error) {
+  if ([4, 5, 134, 135].includes(error?.code)) return "autenticacion rechazada por el broker (codigo " + error.code + ")";
+  if (["EAI_AGAIN", "ENOTFOUND", "ECONNREFUSED", "ECONNRESET", "ETIMEDOUT", "CERT_HAS_EXPIRED", "UNABLE_TO_VERIFY_LEAF_SIGNATURE"].includes(error?.code)) return error.code;
+  const message = String(error?.message ?? "");
+  const status = message.match(/Unexpected server response:\s*(\d{3})/i);
+  if (status) return "WebSocket rechazado con HTTP " + status[1];
+  if (/timeout|timed? out/i.test(message)) return "tiempo de espera agotado";
+  if (/authoriz|username|password/i.test(message)) return "autenticacion rechazada por el broker";
+  return "error de conexion";
+}
+
 export function createTelemetry(client) {
+  let ultimoDiagnostico = "";
+  const informar = (detalle) => {
+    if (detalle !== ultimoDiagnostico) console.info("[MQTT] " + detalle);
+    ultimoDiagnostico = detalle;
+  };
   let connected = false;
   let online = null;
   let state = null;
   let stateAgeOrigin = null;
   let history = null;
 
+  informar("iniciando conexion");
   client.on("connect", () => {
+    informar("sesion iniciada con el broker");
     client.subscribe(Object.values(topics), { qos: 1 }, (error, grants) => {
-      connected = !error && grants?.length === 3 && grants.every(grant => grant.qos < 128);
+      connected = !error && grants?.length === Object.keys(topics).length && grants.every(grant => grant.qos < 128);
+      informar(connected ? "suscripciones de lectura activas" : "el broker no acepto todas las suscripciones de lectura");
     });
   });
   client.on("close", () => {
     connected = false;
     online = null;
   });
-  client.on("error", () => {});
+  client.on("error", error => informar(describeMqttError(error)));
   client.on("message", (topic, data) => {
     if (data.length > 65536) return;
     const text = data.toString();

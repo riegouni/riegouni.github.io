@@ -79,6 +79,31 @@
       url("./assets/campo-riego.jpg") center / cover,
       #182a22;
   }
+  .portada-galeria {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 22px;
+  }
+  .portada-galeria figure {
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid #cebda370;
+    border-radius: 12px;
+    background: #14251e;
+  }
+  .portada-galeria img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 2 / 1;
+    object-fit: cover;
+    background: #243b2f;
+  }
+  .portada-galeria figcaption { padding: 8px 9px; line-height: 1.25; }
+  .portada-galeria a { color: #fffdf8; font-size: .78rem; font-weight: 700; text-underline-offset: 3px; }
+  .portada-galeria a:focus-visible { outline-color: var(--dorado); }
+  .portada-galeria small { display: block; margin-top: 4px; color: #e4d7c0; font-size: .65rem; }
   .marca, .top { display: flex; align-items: center; gap: 13px; }
   .marca { font-size: .83rem; font-weight: 750; }
   .logo, .ent-logo {
@@ -332,6 +357,16 @@
       <div>
         <h1 id="tituloEntrada">Riego <span>Inteligente UNI</span></h1>
         <p class="sub">Monitorea los sensores del cultivo y controla el riego desde un solo lugar.</p>
+        <div class="portada-galeria" role="group" aria-label="Imágenes de riego y monitoreo">
+          <figure>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/2/2c/Drip_irrigation.jpg" alt="Sistema de mangueras de goteo junto a plantas cultivadas" width="1064" height="725" decoding="async" referrerpolicy="no-referrer">
+            <figcaption><a href="https://commons.wikimedia.org/wiki/File:Drip_irrigation.jpg" target="_blank" rel="noopener noreferrer">Riego por goteo</a><small>USDA · Dominio público</small></figcaption>
+          </figure>
+          <figure>
+            <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/6/64/272_soilmoisture.JPG/960px-272_soilmoisture.JPG" alt="Medición de la humedad del suelo en campo" width="960" height="720" decoding="async" referrerpolicy="no-referrer">
+            <figcaption><a href="https://commons.wikimedia.org/wiki/File:272_soilmoisture.JPG" target="_blank" rel="noopener noreferrer">Humedad del suelo</a><small>Christianjhart1 · CC0</small></figcaption>
+          </figure>
+        </div>
       </div>
     </div>
     <div class="ent">

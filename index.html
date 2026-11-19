@@ -18,18 +18,19 @@
     --ceramica: #cebda3;
     --dorado: #c89844;
     --verde: #1fa971;
-    --bg: #f3eee5;
+    --bg: #f1ece3;
     --card: #fffdf8;
     --ink: #191711;
     --ink2: #514a40;
     --muted: #62574a;
-    --line: #e2d7c6;
+    --line: #ded3c2;
     --brand: #07553a;
     --brandSoft: #e3f3e9;
+    --soil: #167c54;
     --water: #15765e;
     --tempSoft: #f6e9cf;
     --bad: #9f2e27;
-    --r: 18px;
+    --r: 22px;
     --sombra: 0 12px 32px #3827170d, 0 2px 4px #3827170a;
   }
 
@@ -44,67 +45,118 @@
   .oculto { display: none !important; }
   .wrap { width: min(100% - 48px, 1280px); margin-inline: auto; }
 
-  /* Acceso */
+  /* Entrada */
   #entrada {
+    min-height: 100vh;
     min-height: 100svh;
     display: grid;
-    grid-template-columns: minmax(0, 1.3fr) minmax(400px, 1fr);
-    background: var(--card);
+    place-items: center;
+    padding: clamp(16px, 5vw, 72px);
+    background: radial-gradient(ellipse at 10% 100%, #3b3124 0, transparent 55%), #141612;
+  }
+  .acceso {
+    display: grid;
+    grid-template-columns: 1.16fr 1fr;
+    width: min(100%, 1110px);
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid #cebda340;
+    border-radius: 30px;
+    box-shadow: 0 28px 90px #0008;
   }
   .portada {
+    isolation: isolate;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: clamp(26px, 5vw, 76px);
+    align-items: flex-start;
+    gap: clamp(36px, 11vw, 156px);
+    min-height: 100%;
+    padding: clamp(25px, 4.6vw, 66px);
     color: #fffdf8;
     background:
-      linear-gradient(180deg, #0009 0%, #0000 28%, #0003 48%, #071410ed 82%, #071410 100%),
-      url("./assets/campo-riego.jpg") center / cover no-repeat,
+      linear-gradient(180deg, #0009, #111c1633 38%, #0d1611eb 100%),
+      url("./assets/campo-riego.jpg") center / cover,
       #182a22;
   }
-  .top { display: flex; align-items: center; gap: 13px; }
-  .portada-texto { padding-top: clamp(120px, 29vh, 320px); }
-  .portada-texto::before {
-    display: block;
-    width: 58px;
-    height: 3px;
-    margin-bottom: 22px;
-    border-radius: 3px;
-    background: var(--dorado);
+  .marca, .top { display: flex; align-items: center; gap: 13px; }
+  .marca { font-size: .83rem; font-weight: 750; }
+  .logo, .ent-logo {
+    width: 46px;
+    height: 46px;
+    display: grid;
+    flex: none;
+    place-items: center;
+    border: 1px solid #ffffff24;
+    border-radius: 14px;
+    background: var(--verde);
+    color: #071d14;
+  }
+  .logo::before {
     content: "";
+    width: 16px;
+    height: 21px;
+    background: currentColor;
+    border-radius: 75% 45% 65% 58%;
+    transform: rotate(38deg) skewY(-8deg);
   }
-  .portada h1 {
-    margin: 0;
-    font-size: clamp(2.85rem, 6.5vw, 7.25rem);
-    font-weight: 800;
-    line-height: .98;
-    letter-spacing: -.075em;
+  .ent-logo { background: #fff; color: inherit; }
+  .ent-logo svg { display: block; width: 78%; height: auto; }
+  .portada .sub { max-width: 35ch; color: #f4ece0; margin: 16px 0 0; }
+  .portada .identidad, .eyebrow {
+    display: block;
+    margin: 0 0 10px;
+    color: #efd298;
+    font-size: .72rem;
+    font-weight: 750;
+    letter-spacing: .12em;
+    text-transform: uppercase;
   }
-  .portada h1 span { display: block; color: var(--ceramica); }
-  .portada .sub { max-width: 38ch; margin: 22px 0 0; color: #f1e7d8; }
-  .ent { display: grid; align-content: center; min-width: 0; padding: clamp(30px, 6vw, 100px); }
-  .ent > * { width: min(100%, 440px); margin-inline: auto; }
-  .ent-top h2 {
-    margin: 0;
-    font-size: clamp(2rem, 3.2vw, 3.15rem);
-    line-height: 1.05;
-    letter-spacing: -.055em;
+  .portada h1 { font-size: clamp(2.6rem, 5.2vw, 5rem); line-height: .99; letter-spacing: -.065em; margin: 0; }
+  .portada h1 span { display: block; color: #efd298; }
+  .ent { min-width: 0; display: flex; flex-direction: column; background: var(--card); }
+  .ent-top { padding: clamp(24px, 4vw, 49px) clamp(20px, 4vw, 49px) 17px; }
+  .ent-top h2 { margin: 0; font-size: clamp(1.5rem, 2.5vw, 2rem); line-height: 1.15; letter-spacing: -.035em; }
+  .ent-top .sub { color: var(--ink2); font-size: .88rem; margin-top: 9px; }
+  .ent-body { padding: 5px clamp(20px, 4vw, 49px) 25px; }
+  .opc {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border: 1px solid #c8dacc;
+    border-radius: 14px;
+    background: #f1f7ef;
+    color: var(--ink);
+    text-align: left;
+    transition: border-color .2s, background .2s;
   }
-  .ent-top .sub { margin: 12px 0 25px; color: var(--ink2); font-size: .94rem; }
-  label.f { display: block; margin: 14px 0 6px; color: var(--ink2); font-size: .84rem; font-weight: 650; }
+  .opc:hover { border-color: var(--verde); background: var(--brandSoft); }
+  .opc .ico { display: grid; place-items: center; width: 37px; height: 37px; border-radius: 10px; background: #dceedd; flex: none; }
+  .opc b, .opc small { display: block; }
+  .opc b { font-size: .9rem; }
+  .opc small { color: var(--ink2); font-size: .75rem; }
+  .opc .flecha { margin-left: auto; color: var(--brand); font-size: 1.2rem; }
+  .sep { display: flex; align-items: center; gap: 11px; color: var(--muted); font-size: .75rem; margin: 17px 0; }
+  .sep::before, .sep::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .ent-body h3 { font-size: .97rem; margin: 0 0 11px; }
+  label.f { display: block; font-size: .78rem; font-weight: 650; color: var(--ink2); margin: 10px 0 5px; }
   input:is([type="number"], [type="time"], [type="text"], [type="password"]) {
     width: 100%;
     min-width: 0;
-    min-height: 45px;
+    min-height: 44px;
     padding: 10px 12px;
-    border: 1px solid #b29d80;
+    border: 1px solid #cfc2ae;
     border-radius: 10px;
-    background: #fffefa;
+    background: #fffcf5;
     color: var(--ink);
   }
-  .chk { display: flex; align-items: center; gap: 8px; margin: 14px 0; color: var(--ink2); font-size: .84rem; }
-  .err { color: var(--bad); font-size: .84rem; margin: 5px 0 9px; }
+  .chk { display: flex; align-items: center; gap: 8px; color: var(--ink2); font-size: .78rem; margin: 12px 0; }
+  .err { color: var(--bad); font-size: .8rem; margin: 5px 0 9px; }
   .err:empty { margin: 0; }
+  .ent-pie { margin-top: auto; padding: 12px clamp(20px, 4vw, 49px); border-top: 1px solid var(--line); background: #f5eee2; color: var(--muted); font-size: .72rem; }
+
   /* Cabecera y botones */
   .btn {
     min-height: 44px;
@@ -116,67 +168,30 @@
     font-weight: 750;
     transition: filter .2s;
   }
-  .btn:not(:disabled):hover { filter: brightness(1.13); }
-  .btn.full { min-height: 46px; }
-  #btnLogin { background: var(--brand); color: #fff; }
+  .btn:not(:disabled):hover { filter: brightness(1.09); }
   .btn.sec { background: #eee5d6; border-color: #d7c8b3; color: var(--ink); }
   .btn.azul { background: var(--water); color: #fff; }
   .btn.full { width: 100%; }
-  header { background: #101911; color: #fffdf8; }
-  header :focus-visible { outline-color: var(--dorado); }
-  .barra-app { border-bottom: 1px solid #cebda34a; background: var(--negro); }
-  .top { min-height: 74px; padding-block: 10px; }
-  .nombre-app { flex: none; font-size: .9rem; font-weight: 750; }
-  .menu { display: flex; align-items: center; gap: clamp(12px, 2.4vw, 34px); margin-left: clamp(12px, 3vw, 46px); }
-  .menu a { padding-block: 9px; color: #efe4d3; font-size: .83rem; font-weight: 600; text-decoration: none; }
-  .menu a:hover { color: #8cf0b8; text-decoration: underline; text-underline-offset: 5px; }
-  .usr { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-left: auto; }
-  .quien, .chip { border: 1px solid #cebda360; }
-  .quien { padding: 7px 11px; border-radius: 999px; color: #efe4d3; font-size: .8rem; overflow-wrap: anywhere; }
-  #btnSesion {
-    min-height: 42px;
-    padding: 6px 13px;
-    border: 1px solid transparent;
-    border-radius: 9px;
-    background: var(--ceramica);
-    color: var(--negro);
-    font-size: .83rem;
-    font-weight: 750;
-  }
-  #btnSesion:hover { background: #e7d6bb; }
-  .cabecera-panel {
-    padding: clamp(28px, 4.5vw, 58px) 0 70px;
+  header {
+    padding: 26px 0 82px;
+    border-top: 4px solid var(--dorado);
     background:
-      linear-gradient(90deg, #101911 0%, #101911f0 27%, #1019119c 63%, #10191150 100%),
-      url("./assets/campo-riego.jpg") center 55% / cover no-repeat;
+      repeating-linear-gradient(128deg, transparent 0 29px, #cebda30e 30px 31px, transparent 32px 69px),
+      linear-gradient(110deg, var(--negro), #173427);
+    color: #fffdf8;
   }
-  .proyecto {
-    margin: 0 0 8px;
-    color: #ecd1a0;
-    font-size: .77rem;
-    font-weight: 700;
-    letter-spacing: .09em;
-    text-transform: uppercase;
-  }
-  header h1 {
-    margin: 0;
-    font-size: clamp(2.35rem, 5.5vw, 4.25rem);
-    font-weight: 800;
-    line-height: 1.01;
-    letter-spacing: -.06em;
-  }
-  header .sub { margin: 9px 0 0; color: #f0e6d6; font-size: .92rem; }
-  .chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 21px; }
-  .chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 6px 9px;
-    border-radius: 7px;
-    background: #111a13e6;
-    font-size: .78rem;
-  }
-  .chip i { width: 7px; height: 7px; flex: none; border-radius: 50%; background: var(--ceramica); }
+  header :focus-visible { outline-color: #efd298; }
+  header .eyebrow { margin: 0 0 3px; }
+  header h1 { margin: 0; font-size: clamp(1.24rem, 2.8vw, 1.85rem); line-height: 1.12; letter-spacing: -.035em; }
+  header .sub { margin-top: 4px; color: #e2d6c1; font-size: .76rem; }
+  .usr { margin-left: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .quien, .chip, #btnSesion { border: 1px solid #cebda347; }
+  .quien { padding: 7px 11px; border-radius: 999px; font-size: .76rem; overflow-wrap: anywhere; }
+  #btnSesion { min-height: 38px; padding: 6px 13px; border-radius: 10px; background: var(--ceramica); color: var(--negro); font-size: .8rem; font-weight: 700; }
+  #btnSesion:hover { background: #e7d6bb; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; padding-top: 18px; margin-top: 19px; border-top: 1px solid #cebda33b; }
+  .chip { display: inline-flex; align-items: center; gap: 7px; padding: 6px 10px; border-radius: 999px; background: #ffffff0b; font-size: .74rem; }
+  .chip i { width: 8px; height: 8px; flex: none; border-radius: 50%; background: var(--ceramica); }
   .chip.ok i { background: #60db9c; }
   .chip.bad i { background: #ff9a8d; }
   .chip.wait i { background: #efc577; }
@@ -186,9 +201,7 @@
   #alertas:empty { display: none; }
   #alertas { display: grid; gap: 8px; }
   .grid { display: grid; gap: 18px; min-width: 0; }
-  .cols { align-items: stretch; }
   .cols2 { align-items: start; }
-  #resumen, #historial, #control { scroll-margin-top: 18px; }
   .card {
     min-width: 0;
     padding: clamp(16px, 2vw, 24px);
@@ -197,18 +210,13 @@
     background: var(--card);
     box-shadow: var(--sombra);
   }
-  .card h2 { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin: 0 0 17px; font-size: 1.13rem; line-height: 1.25; letter-spacing: -.018em; }
+  .card h2 { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0 0 17px; font-size: 1.04rem; line-height: 1.25; letter-spacing: -.018em; }
   .card h2 small { margin-left: auto; color: var(--muted); font-size: .72rem; font-weight: 500; letter-spacing: normal; }
   .card h2 .icono { display: grid; place-items: center; width: 32px; height: 32px; flex: none; border-radius: 9px; background: #efe5d3; font-size: .94rem; }
-  .estado-card {
-    display: flex;
-    flex-direction: column;
-    background:
-      radial-gradient(ellipse at 95% 0%, #225d43 0%, transparent 66%),
-      #132a20;
-    border-color: #34523c;
-    color: #fffdf8;
-  }
+  .alert { display: flex; align-items: flex-start; gap: 10px; padding: 11px 14px; border: 1px solid var(--line); border-left: 4px solid var(--cafe); border-radius: 12px; background: var(--card); color: var(--ink2); font-size: .84rem; box-shadow: var(--sombra); }
+  .alert.red { border-left-color: var(--bad); background: #fcebe8; color: #7d2520; }
+  .alert.amber { border-left-color: var(--dorado); background: #fff1d5; color: #66420b; }
+  .estado-card { background: #143024; border-color: #34523c; color: #fffdf8; }
   .estado-card h2 .icono { background: #ffffff18; }
   .estado { display: flex; align-items: center; gap: 14px; min-width: 0; padding-block: 6px; }
   .gota { display: grid; place-items: center; width: clamp(52px, 7vw, 76px); aspect-ratio: 1; flex: none; border: 1px solid #70c0935c; border-radius: 22px; color: #fff; background: #214c37; font-size: clamp(1.55rem, 3vw, 2rem); position: relative; }
@@ -221,28 +229,13 @@
   .badge { margin-top: 9px; background: #d3efdf; color: #084d32; }
   .badge.manual { background: #f5dfad; color: #573810; }
   .badge.paro { background: #f9d8d3; color: #80251f; }
-  .salidas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: auto; padding-top: 16px; }
+  .salidas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 16px; }
   .sal { padding: 8px 10px; border: 1px solid #cebda347; border-radius: 10px; background: #ffffff0a; color: #e0e0ce; font-size: .72rem; }
   .sal b { display: block; color: #fffdf8; font-size: .82rem; margin-top: 3px; }
   .sal.on { border-color: #69c69a; background: #23503b; }
 
   .sens { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
-  .s {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 12px 8px;
-    border: 1px solid var(--line);
-    border-top: 3px solid var(--medidor, var(--verde));
-    border-radius: 12px;
-    background: #f8f4ec;
-    text-align: center;
-  }
-  .s.temperatura { --medidor: var(--dorado); background: #fcf4e5; }
-  .s.aire { --medidor: var(--cafe); }
-  .s.tanque { --medidor: var(--water); background: #edf5ef; }
-  .s.suelo { background: #edf5ec; }
+  .s { min-width: 0; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 10px 8px; border: 1px solid var(--line); border-radius: 14px; background: #faf6ed; }
   .s .k { display: flex; align-items: center; justify-content: center; gap: 5px; min-height: 2.4em; color: var(--ink2); font-size: .74rem; line-height: 1.2; font-weight: 700; }
   .ring { position: relative; width: min(100%, 104px); aspect-ratio: 1; margin: 4px 0; }
   .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
@@ -250,12 +243,7 @@
   .ring .val small { color: var(--ink2); font-size: .62rem; }
   .ring circle { fill: none; stroke-width: 8; }
   .ring .fondo { stroke: #e9dfcf; }
-  .ring .arco {
-    stroke-dasharray: 264;
-    stroke-dashoffset: 264;
-    stroke-linecap: round;
-    transition: stroke-dashoffset .7s ease;
-  }
+  .ring .arco { stroke-linecap: round; transition: stroke-dashoffset .7s ease; }
   .tag { margin-top: 3px; justify-content: center; line-height: 1.25; }
   .tag.seco, .tag.calor { background: var(--tempSoft); color: #714816; }
   .tag.optimo { background: var(--brandSoft); color: var(--brand); }
@@ -278,22 +266,12 @@
   .resumen b { display: block; color: var(--ink); font-size: 1.05rem; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
   .lienzo { position: relative; height: clamp(205px, 28vw, 320px); }
   .lienzo canvas { display: block; max-width: 100%; }
-  .vacio {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-items: center;
-    padding: 18px;
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    background: radial-gradient(circle, #ccb99870 1px, transparent 1.5px) 0 0 / 17px 17px, #fbf7ef;
-    color: var(--ink2);
-    text-align: center;
-    font-size: .87rem;
-    font-weight: 650;
-  }
+  .vacio { position: absolute; inset: 0; display: grid; place-items: center; padding: 18px; border: 1px dashed #cfc1ab; border-radius: 12px; background: #fbf7ef; text-align: center; color: var(--muted); font-size: .87rem; }
   .nota, .hint { margin-top: 8px; color: var(--muted); font-size: .77rem; }
 
+  .candado { padding: 14px 4px; text-align: center; }
+  .candado .ic { font-size: 29px; }
+  .candado p { margin: 8px 0 14px; color: var(--ink2); font-size: .87rem; }
   .seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 12px; background: #ede4d6; }
   .seg button { min-height: 42px; padding: 8px 3px; border: 0; border-radius: 8px; background: transparent; color: var(--ink2); font-size: .77rem; font-weight: 700; }
   .seg button:hover, .seg button.sel { background: var(--card); color: var(--brand); }
@@ -318,170 +296,29 @@
     .cols2 { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
   }
   @media (min-width: 1000px) {
-    .cols { grid-template-columns: minmax(280px, 1fr) minmax(0, 2.4fr); }
-  }
-  @media (max-width: 950px) {
-    .top { flex-wrap: wrap; gap: 8px; }
-    .menu { order: 1; width: 100%; margin-left: 0; border-top: 1px solid #cebda33b; }
+    .cols { grid-template-columns: minmax(270px, .9fr) minmax(0, 2.1fr); }
   }
   @media (max-width: 740px) {
-    #entrada { grid-template-columns: minmax(0, 1fr); }
-    .portada { gap: 22px; padding: 22px; background-position: center 52%; }
-    .portada-texto { padding-top: 35px; }
-    .portada-texto::before { margin-bottom: 14px; }
-    .portada h1 { font-size: clamp(2.55rem, 8.5vw, 4.5rem); }
+    .acceso { width: min(100%, 510px); grid-template-columns: minmax(0, 1fr); border-radius: 22px; }
+    .portada { gap: 24px; background-position: center 60%; padding: 22px; }
+    .portada h1 { font-size: clamp(2.3rem, 9vw, 3.3rem); }
     .portada h1 span { display: inline; }
-    .portada .sub { margin-top: 12px; font-size: .88rem; }
-    .ent { padding: 26px 20px 34px; }
+    .portada .sub { margin-top: 10px; font-size: .84rem; }
+    .marca { font-size: .72rem; }
+    .ent-logo { width: 34px; height: 34px; border-radius: 10px; }
     .wrap { width: calc(100% - 28px); }
-    .cabecera-panel {
-      background-image: linear-gradient(90deg, #101911f5 0%, #101911ba 65%, #10191180 100%), url("./assets/campo-riego.jpg");
-    }
   }
-  @media (max-width: 440px) {
-    .nombre-app { flex: 1 1 min-content; }
-    .usr { gap: 4px; }
-    .quien { max-width: 120px; font-size: .71rem; }
-    .menu { justify-content: space-between; gap: 6px; }
-    .menu a { font-size: .77rem; }
+  @media (max-width: 520px) {
+    .top { flex-wrap: wrap; }
+    .usr { width: 100%; margin: 2px 0 0; justify-content: space-between; }
+    header { padding-top: 18px; }
+    .chips { margin-top: 12px; padding-top: 13px; }
+    .ring { max-width: 96px; }
     .card h2 small { margin-left: 0; }
     .barra-graf, .tabs { gap: 6px; }
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
-  }
-  /* Entrada y navegación por perfil */
-  #entrada {
-    grid-template-columns: minmax(0, 1.08fr) minmax(370px, .92fr);
-    background: #f5eee3;
-  }
-  .portada {
-    gap: 34px;
-    min-height: min(100svh, 850px);
-    padding: clamp(28px, 5vw, 78px);
-    background:
-      linear-gradient(160deg, #080e10aa 0%, transparent 43%, #07120fe8 77%, #07120f 100%),
-      url("./assets/campo-riego.jpg") 52% center / cover no-repeat,
-      #16271f;
-  }
-  .uni-marca { display: flex; align-items: center; gap: 14px; }
-  .uni-placa {
-    display: grid;
-    place-items: center;
-    flex: none;
-    width: 93px;
-    padding: 13px;
-    border-radius: 12px;
-    background: #fff;
-  }
-  .uni-logo { display: block; width: 100%; height: auto; }
-  .uni-identidad { font-size: .86rem; font-weight: 700; line-height: 1.35; }
-  .uni-identidad small { display: block; color: #e9dbca; font-size: .76rem; font-weight: 500; margin-top: 4px; }
-  .portada-texto { padding-top: 0; }
-  .portada h1 { font-size: clamp(2.9rem, 6.2vw, 6.75rem); }
-  .ent { padding: clamp(24px, 5.1vw, 80px); }
-  .ent > .acceso-card {
-    width: min(100%, 505px);
-    padding: clamp(19px, 3.5vw, 43px);
-    border: 1px solid #dfd1bc;
-    border-radius: 26px;
-    background: var(--card);
-    box-shadow: 0 18px 50px #49392117;
-  }
-  .ent-top .sub { margin-bottom: 20px; }
-  .perfil-opciones {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 4px;
-    margin-bottom: 19px;
-    padding: 5px;
-    border: 1px solid #e1d4c0;
-    border-radius: 13px;
-    background: #f3ecdf;
-  }
-  .perfil-opciones button {
-    min-height: 44px;
-    padding: 5px;
-    border: 1px solid transparent;
-    border-radius: 9px;
-    background: transparent;
-    color: #524433;
-    font-weight: 750;
-    font-size: .88rem;
-  }
-  .perfil-opciones button[aria-pressed="true"] {
-    border-color: #9cbfa9;
-    background: #e5f4ea;
-    color: #084833;
-  }
-  .perfil-opciones button:hover { text-decoration: underline; text-underline-offset: 4px; }
-  .perfil-info { margin-bottom: 15px; color: var(--ink2); font-size: .9rem; }
-  .perfil-info h3 { margin: 0 0 6px; color: var(--ink); font-size: 1.08rem; }
-  .perfil-info p { margin: 0; }
-  .clavecaja { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: stretch; gap: 6px; }
-  .clavecaja button {
-    padding: 0 9px;
-    border: 1px solid #b29d80;
-    border-radius: 10px;
-    background: #f4ede1;
-    color: var(--ink);
-    font-size: .78rem;
-    font-weight: 750;
-  }
-  #btnVisitante { background: var(--verde); }
-  #app .uni-placa { width: 49px; padding: 7px; border-radius: 7px; }
-  #app[data-perfil="operador"] .barra-app { border-bottom-color: var(--dorado); }
-  #app[data-perfil="operador"] .quien { background: #c8984430; color: #fff2d3; }
-  .espacio-operador {
-    min-width: 0;
-    padding: clamp(14px, 2.5vw, 26px);
-    border: 1px solid #c7a977;
-    border-radius: var(--r);
-    background: #eee2ce;
-    scroll-margin-top: 18px;
-  }
-  .espacio-operador > h2 { margin: 0 0 3px; font-size: clamp(1.28rem, 2.8vw, 1.8rem); letter-spacing: -.035em; }
-  .espacio-operador > p { margin: 0 0 15px; color: var(--ink2); font-size: .9rem; }
-
-  /* Avisos del sistema */
-  #alertas { gap: 12px; }
-  .alert {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: start;
-    gap: clamp(10px, 2vw, 20px);
-    padding: clamp(15px, 2.7vw, 29px);
-    border: 1px solid var(--alerta-borde);
-    border-left-width: 7px;
-    border-radius: 15px;
-    background: var(--alerta-fondo);
-    color: var(--alerta-tinta);
-    box-shadow: var(--sombra);
-  }
-  .alert.red { --alerta-borde: #a72a24; --alerta-fondo: #ffebe7; --alerta-tinta: #6c1c19; }
-  .alert.amber { --alerta-borde: #a76a13; --alerta-fondo: #fff2d6; --alerta-tinta: #653c0a; }
-  .alert.gray { --alerta-borde: #655036; --alerta-fondo: #f9efe2; --alerta-tinta: #4b3b29; }
-  .alert-icono {
-    display: grid;
-    place-items: center;
-    width: clamp(34px, 6vw, 54px);
-    aspect-ratio: 1;
-    border-radius: 11px;
-    background: var(--alerta-borde);
-    color: white;
-    font-size: clamp(1.05rem, 2.2vw, 1.6rem);
-    font-weight: 800;
-  }
-  .alert small { display: block; margin-bottom: 3px; font-size: .74rem; font-weight: 800; text-transform: uppercase; }
-  .alert h2 { margin: 0; font-size: clamp(1.16rem, 2.8vw, 1.82rem); line-height: 1.14; letter-spacing: -.025em; }
-  .alert p { margin: 6px 0 0; font-size: .94rem; line-height: 1.42; }
-  @media (max-width: 740px) {
-    #entrada { grid-template-columns: minmax(0, 1fr); }
-    .portada { gap: 26px; min-height: auto; padding: 22px; }
-    .portada h1 { font-size: clamp(2.4rem, 8.8vw, 4.45rem); }
-    .portada .sub { font-size: .9rem; }
-    .uni-placa { width: 75px; padding: 10px; }
-    .ent { padding: 18px 13px 32px; }
   }
 </style>
 </head>
@@ -489,43 +326,38 @@
 
 <!-- ======================= PANTALLA DE ENTRADA ======================= -->
 <section id="entrada" aria-labelledby="tituloEntrada">
-  <div class="portada">
-    <div class="uni-marca"><span class="uni-placa"><svg class="uni-logo" viewBox="0 0 610 377" role="img" aria-label="Logo de la UNI" xmlns="http://www.w3.org/2000/svg"><path fill="#063581" d="M0 0h610v377H0z"/><path fill="#fff" d="M102 0h25v252h102V95h152v282h-25V126H254v157H102zM483 0h25v95h102v31H508v157h-25z"/></svg></span><span class="uni-identidad">Universidad Nacional de Ingeniería<small>Feria Nacional UNI</small></span></div>
-    <div class="portada-texto">
-      <h1 id="tituloEntrada">Riego <span>Inteligente UNI</span></h1>
-      <p class="sub">Monitorea el cultivo y el nivel de agua desde cualquier dispositivo.</p>
+  <div class="acceso">
+    <div class="portada">
+      <div class="marca"><span class="ent-logo"><svg class="uni-logo" viewBox="0 0 610 377" role="img" aria-label="Logo de la UNI" xmlns="http://www.w3.org/2000/svg"><path fill="#063581" d="M0 0h610v377H0z"/><path fill="#fff" d="M102 0h25v252h102V95h152v282h-25V126H254v157H102zM483 0h25v95h102v31H508v157h-25z"/></svg></span> Feria Nacional UNI</div>
+      <div>
+        <h1 id="tituloEntrada">Riego <span>Inteligente UNI</span></h1>
+        <p class="sub">Monitorea los sensores del cultivo y controla el riego desde un solo lugar.</p>
+      </div>
     </div>
-  </div>
-  <div class="ent">
-    <div class="acceso-card">
+    <div class="ent">
       <div class="ent-top">
-        <h2 id="accesoTitulo" tabindex="-1">Acceso al panel</h2>
-        <p class="sub">Elige cómo quieres entrar.</p>
+        <h2>Acceso al panel</h2>
+        <p class="sub">Consulta las lecturas o inicia sesión para manejar el sistema.</p>
       </div>
-      <div class="perfil-opciones" role="group" aria-label="Tipo de acceso">
-        <button type="button" id="elegirVisitante" aria-pressed="true" aria-controls="perfilVisitante">Visitante</button>
-        <button type="button" id="elegirOperador" aria-pressed="false" aria-controls="formLogin">Operador</button>
-      </div>
-      <div id="perfilVisitante">
-        <div class="perfil-info">
-          <h3>Consulta las lecturas</h3>
-          <p>Revisa el estado del riego, los sensores y su historial.</p>
-        </div>
-        <button class="btn full" id="btnVisitante" type="button">Entrar como visitante</button>
-      </div>
-      <form id="formLogin" class="oculto" autocomplete="on">
-        <div class="perfil-info"><p>Usa tu cuenta para gestionar el riego, los horarios y los ajustes.</p></div>
-        <label class="f" for="lu">Usuario</label>
-        <input type="text" id="lu" autocomplete="username" autocapitalize="off" spellcheck="false">
-        <label class="f" for="lp">Contraseña</label>
-        <div class="clavecaja">
+      <div class="ent-body">
+        <button class="opc" id="btnVisitante">
+          <span class="ico" aria-hidden="true">◉</span>
+          <span><b>Entrar como visitante</b><small>Datos en vivo e historial de sensores</small></span>
+          <span class="flecha" aria-hidden="true">→</span>
+        </button>
+        <div class="sep">o</div>
+        <form id="formLogin" autocomplete="on">
+          <h3>Acceso de operadores</h3>
+          <label class="f" for="lu">Usuario</label>
+          <input type="text" id="lu" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="Ej.: control">
+          <label class="f" for="lp">Contraseña</label>
           <input type="password" id="lp" autocomplete="current-password">
-          <button type="button" id="verClave" aria-controls="lp">Mostrar</button>
-        </div>
-        <label class="chk"><input type="checkbox" id="lr"> Mantener la sesión en este dispositivo</label>
-        <div class="err" id="lerr" role="status"></div>
-        <button class="btn full" type="submit" id="btnLogin">Iniciar sesión</button>
-      </form>
+          <label class="chk"><input type="checkbox" id="lr" checked> Mantener la sesión en este dispositivo</label>
+          <div class="err" id="lerr" role="status"></div>
+          <button class="btn full" type="submit" id="btnLogin">Iniciar sesión</button>
+        </form>
+      </div>
+      <div class="ent-pie">El administrador crea las cuentas con permiso de control.</div>
     </div>
   </div>
 </section>
@@ -533,40 +365,32 @@
 <!-- ======================= APLICACIÓN ======================= -->
 <div id="app" class="oculto">
 <header>
-  <div class="barra-app">
-    <div class="wrap top">
-      <span class="uni-placa"><svg class="uni-logo" viewBox="0 0 610 377" role="img" aria-label="Logo de la UNI" xmlns="http://www.w3.org/2000/svg"><path fill="#063581" d="M0 0h610v377H0z"/><path fill="#fff" d="M102 0h25v252h102V95h152v282h-25V126H254v157H102zM483 0h25v95h102v31H508v157h-25z"/></svg></span>
-      <span class="nombre-app">Riego UNI</span>
-      <nav class="menu" aria-label="Secciones del panel">
-        <a href="#resumen">Resumen</a>
-        <a href="#historial">Historial</a>
-        <a href="#operacion" id="navOperador" class="oculto">Operación</a>
-      </nav>
+  <div class="wrap">
+    <div class="top">
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <span class="eyebrow">Panel de riego</span>
+        <h1>Riego Inteligente UNI</h1>
+        <div class="sub">Feria Nacional UNI · ESP32, nRF24L01 y MQTT</div>
+      </div>
       <div class="usr">
         <span class="quien" id="quien">👁️ Visitante</span>
-        <button id="btnSesion" type="button">Iniciar sesión</button>
+        <button id="btnSesion">Salir</button>
       </div>
     </div>
-  </div>
-  <div class="cabecera-panel">
-    <div class="wrap">
-      <p class="proyecto">Feria Nacional UNI</p>
-      <h1 id="tituloPanel" tabindex="-1">Panel de visitantes</h1>
-      <p class="sub" id="bajadaPanel">Lecturas, historial y estado del riego.</p>
-      <div class="chips">
-        <span class="chip wait" id="chipNube"><i></i>Nube: conectando…</span>
-        <span class="chip wait" id="chipEsp"><i></i>Sistema: esperando datos</span>
-        <span class="chip" id="chipHora"><i></i>Actualizado: –</span>
-        <span class="chip" id="chipWifi"><i></i>WiFi: –</span>
-      </div>
+    <div class="chips">
+      <span class="chip wait" id="chipNube"><i></i>Nube: conectando…</span>
+      <span class="chip wait" id="chipEsp"><i></i>Sistema: esperando datos</span>
+      <span class="chip" id="chipHora"><i></i>Actualizado: –</span>
+      <span class="chip" id="chipWifi"><i></i>WiFi: –</span>
     </div>
   </div>
 </header>
 
 <main class="wrap">
-  <div id="alertas" aria-live="polite" aria-label="Alertas del sistema"></div>
+  <div id="alertas"></div>
 
-  <div class="grid cols" id="resumen">
+  <div class="grid cols">
     <section class="card estado-card">
       <h2><span class="icono" aria-hidden="true">💧</span>Estado del riego</h2>
       <div class="estado">
@@ -586,22 +410,22 @@
     <section class="card">
       <h2><span class="icono" aria-hidden="true">📡</span>Sensores en vivo <small>Actualización cada 5 s</small></h2>
       <div class="sens">
-        <div class="s suelo">
+        <div class="s">
           <div class="k">🌱 Humedad del suelo</div>
           <div class="ring"><svg viewBox="0 0 104 104" aria-hidden="true"><circle class="fondo" cx="52" cy="52" r="42"/><circle class="arco" id="gSuelo" cx="52" cy="52" r="42" stroke="#167c54"/></svg><div class="val" id="vSuelo">–</div></div>
           <span class="tag nd" id="tagSuelo">sin datos</span>
         </div>
-        <div class="s temperatura">
+        <div class="s">
           <div class="k">🌡️ Temperatura</div>
           <div class="ring"><svg viewBox="0 0 104 104" aria-hidden="true"><circle class="fondo" cx="52" cy="52" r="42"/><circle class="arco" id="gTemp" cx="52" cy="52" r="42" stroke="#b47d25"/></svg><div class="val" id="vTemp">–</div></div>
           <span class="tag nd" id="tagTemp">–</span>
         </div>
-        <div class="s aire">
+        <div class="s">
           <div class="k">💨 Humedad del aire</div>
           <div class="ring"><svg viewBox="0 0 104 104" aria-hidden="true"><circle class="fondo" cx="52" cy="52" r="42"/><circle class="arco" id="gHr" cx="52" cy="52" r="42" stroke="#907151"/></svg><div class="val" id="vHr">–</div></div>
           <div class="n">Sensor DHT11</div>
         </div>
-        <div class="s tanque">
+        <div class="s">
           <div class="k">🛢️ Tanque de agua</div>
           <div class="ring"><svg viewBox="0 0 104 104" aria-hidden="true"><circle class="fondo" cx="52" cy="52" r="42"/><circle class="arco" id="gNivel" cx="52" cy="52" r="42" stroke="#15765e"/></svg><div class="val" id="vNivel">–</div></div>
           <div class="n" id="nNivel">–</div>
@@ -610,70 +434,7 @@
     </section>
   </div>
 
-  <section class="espacio-operador oculto" id="operacion" aria-labelledby="tituloOperacion">
-    <h2 id="tituloOperacion">Operación del riego</h2>
-    <p>Control manual, programación y registro de acciones.</p>
-    <div class="grid cols2">
-      <section class="card" id="control">
-        <h2><span class="icono" aria-hidden="true">🎛️</span>Control del riego</h2>
-        <div>
-          <div class="seg" id="segModo">
-            <button data-modo="auto">🤖 Automático</button>
-            <button data-modo="manual">✋ Manual</button>
-            <button data-modo="paro">⛔ Paro</button>
-          </div>
-          <div class="hint" id="hintModo"></div>
-  
-          <div class="bloque">
-            <h3>Riego manual</h3>
-            <div class="fila">
-              <button class="btn azul" id="btnOn">💧 Encender riego</button>
-              <button class="btn sec" id="btnOff">Apagar riego</button>
-            </div>
-            <div class="fila" style="margin-top:10px">
-              <div><label class="f" for="minutos">Regar por (minutos)</label><input type="number" id="minutos" min="1" max="240" value="10"></div>
-              <button class="btn" id="btnTemp" style="flex:none">⏱️ Regar</button>
-            </div>
-            <div class="hint" id="hintTemp">Riega ese tiempo y se apaga solo.</div>
-          </div>
-  
-          <div class="bloque">
-            <h3>Ajustes del modo automático</h3>
-            <div class="fila">
-              <div><label class="f" for="slim">Regar si la humedad baja de (%)</label><input type="number" id="slim" min="0" max="95"></div>
-              <div><label class="f" for="tlim">Regar si la temperatura pasa de (°C)</label><input type="number" id="tlim" min="0" max="60" step="0.5"></div>
-            </div>
-            <div class="hint">Por humedad: enciende bajo el límite y apaga 5 puntos arriba.</div>
-            <button class="btn full" id="btnAjustes" style="margin-top:10px">Guardar ajustes</button>
-          </div>
-  
-          <div class="bloque">
-            <h3>Horarios diarios</h3>
-            <div class="hor">
-              <label class="sw"><input type="checkbox" id="a1"> 1</label>
-              <div><label class="f" for="h1">Hora</label><input type="time" id="h1"></div>
-              <div><label class="f" for="d1">Minutos</label><input type="number" id="d1" min="1" max="240"></div>
-            </div>
-            <div class="hor">
-              <label class="sw"><input type="checkbox" id="a2"> 2</label>
-              <div><label class="f" for="h2">Hora</label><input type="time" id="h2"></div>
-              <div><label class="f" for="d2">Minutos</label><input type="number" id="d2" min="1" max="240"></div>
-            </div>
-            <div class="hint">Se cumplen aunque esta página esté cerrada (no en modo Paro).</div>
-            <button class="btn full" id="btnHor" style="margin-top:10px">Guardar horarios</button>
-          </div>
-          <div class="hint" style="margin-top:14px">🛡️ Por seguridad, el riego no enciende con el tanque vacío ni con alarma del LDR.</div>
-        </div>
-      </section>
-  
-      <section class="card">
-        <h2><span class="icono" aria-hidden="true">🧾</span>Actividad <small>En este dispositivo</small></h2>
-        <ul class="act" id="actividad"><li><span class="h">–</span><span>Sin acciones todavía.</span></li></ul>
-      </section>
-    </div>
-  </section>
-
-  <section class="card" id="historial">
+  <section class="card">
     <h2><span class="icono" aria-hidden="true">📈</span>Historial de lecturas</h2>
     <div class="barra-graf">
       <div class="tabs">
@@ -700,6 +461,70 @@
     <div class="nota" id="notaGraf"></div>
   </section>
 
+  <div class="grid cols2">
+    <section class="card" id="control">
+      <h2><span class="icono" aria-hidden="true">🎛️</span>Control del riego</h2>
+      <div id="bloqueado" class="candado">
+        <div class="ic">🔒</div>
+        <p>Estás como <b>visitante</b>: puedes ver todo, pero no controlar.<br>Inicia sesión con tu usuario para manejar el riego.</p>
+        <button class="btn" id="btnIrLogin">Iniciar sesión</button>
+      </div>
+
+      <div id="desbloqueado" class="oculto">
+        <div class="seg" id="segModo">
+          <button data-modo="auto">🤖 Automático</button>
+          <button data-modo="manual">✋ Manual</button>
+          <button data-modo="paro">⛔ Paro</button>
+        </div>
+        <div class="hint" id="hintModo"></div>
+
+        <div class="bloque">
+          <h3>Riego manual</h3>
+          <div class="fila">
+            <button class="btn azul" id="btnOn">💧 Encender riego</button>
+            <button class="btn sec" id="btnOff">Apagar riego</button>
+          </div>
+          <div class="fila" style="margin-top:10px">
+            <div><label class="f" for="minutos">Regar por (minutos)</label><input type="number" id="minutos" min="1" max="240" value="10"></div>
+            <button class="btn" id="btnTemp" style="flex:none">⏱️ Regar</button>
+          </div>
+          <div class="hint" id="hintTemp">Riega ese tiempo y se apaga solo.</div>
+        </div>
+
+        <div class="bloque">
+          <h3>Ajustes del modo automático</h3>
+          <div class="fila">
+            <div><label class="f" for="slim">Regar si la humedad baja de (%)</label><input type="number" id="slim" min="0" max="95"></div>
+            <div><label class="f" for="tlim">Regar si la temperatura pasa de (°C)</label><input type="number" id="tlim" min="0" max="60" step="0.5"></div>
+          </div>
+          <div class="hint">Por humedad: enciende bajo el límite y apaga 5 puntos arriba.</div>
+          <button class="btn full" id="btnAjustes" style="margin-top:10px">Guardar ajustes</button>
+        </div>
+
+        <div class="bloque">
+          <h3>Horarios diarios</h3>
+          <div class="hor">
+            <label class="sw"><input type="checkbox" id="a1"> 1</label>
+            <div><label class="f" for="h1">Hora</label><input type="time" id="h1"></div>
+            <div><label class="f" for="d1">Minutos</label><input type="number" id="d1" min="1" max="240"></div>
+          </div>
+          <div class="hor">
+            <label class="sw"><input type="checkbox" id="a2"> 2</label>
+            <div><label class="f" for="h2">Hora</label><input type="time" id="h2"></div>
+            <div><label class="f" for="d2">Minutos</label><input type="number" id="d2" min="1" max="240"></div>
+          </div>
+          <div class="hint">Se cumplen aunque esta página esté cerrada (no en modo Paro).</div>
+          <button class="btn full" id="btnHor" style="margin-top:10px">Guardar horarios</button>
+        </div>
+        <div class="hint" style="margin-top:14px">🛡️ Por seguridad, el riego no enciende con el tanque vacío ni con alarma del LDR.</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2><span class="icono" aria-hidden="true">🧾</span>Actividad <small>En este dispositivo</small></h2>
+      <ul class="act" id="actividad"><li><span class="h">–</span><span>Sin acciones todavía.</span></li></ul>
+    </section>
+  </div>
 </main>
 <footer>UNI · Sistema de Riego Inteligente · Feria Nacional</footer>
 </div>
@@ -763,31 +588,13 @@ function conectar(usuario, clave){
   });
 }
 
-function elegirPerfil(operador){
-  $("elegirOperador").setAttribute("aria-pressed", operador);
-  $("elegirVisitante").setAttribute("aria-pressed", !operador);
-  $("perfilVisitante").classList.toggle("oculto", operador);
-  $("formLogin").classList.toggle("oculto", !operador);
-}
-
-function mostrarClave(visible){
-  $("lp").type = visible ? "text" : "password";
-  $("verClave").textContent = visible ? "Ocultar" : "Mostrar";
-}
-
 function mostrarApp(){
   $("entrada").classList.add("oculto"); $("app").classList.remove("oculto");
   const control = !!sesion;
-  $("app").dataset.perfil = control ? "operador" : "visitante";
-  $("quien").textContent = control ? sesion.u + " · Operador" : "Visitante";
-  $("btnSesion").textContent = control ? "Cerrar sesión" : "Acceso de operador";
-  $("tituloPanel").textContent = control ? "Panel de operación" : "Panel de visitantes";
-  $("bajadaPanel").textContent = control ? "Monitoreo, programación y control del sistema." : "Lecturas, historial y estado del riego.";
-  $("navOperador").classList.toggle("oculto", !control);
-  $("operacion").classList.toggle("oculto", !control);
-  pintarAlertas(est);
-  $("tituloPanel").focus({ preventScroll: true });
-  window.scrollTo(0, 0);
+  $("quien").textContent = control ? "👤 " + sesion.u + " · control" : "👁️ Visitante";
+  $("btnSesion").textContent = control ? "Cerrar sesión" : "Iniciar sesión";
+  $("bloqueado").classList.toggle("oculto", control);
+  $("desbloqueado").classList.toggle("oculto", !control);
   if (grafica) grafica.resize();
   dibujar();
 }
@@ -795,10 +602,7 @@ function mostrarApp(){
 function mostrarEntrada(msg){
   detenerLecturas();
   $("app").classList.add("oculto"); $("entrada").classList.remove("oculto");
-  mostrarClave(false);
   $("lerr").textContent = msg || ""; $("lp").value = "";
-  $("accesoTitulo").focus({ preventScroll: true });
-  window.scrollTo(0, 0);
 }
 
 let lecturaActiva = null;
@@ -874,7 +678,6 @@ async function iniciarSesion(u, p, recordar, automatico){
   } else {
     if (cliente) { try{ cliente.end(true); }catch(e){} }
     olvidar();
-    elegirPerfil(true);
     mostrarEntrada(ok === false ? "Usuario o contraseña incorrectos." : "No se pudo conectar. Revisa tu internet.");
   }
 }
@@ -927,41 +730,15 @@ function ponerSiNoEditado(id, valor){
   const el = $(id); if (el.type === "checkbox") el.checked = !!valor; else el.value = valor;
 }
 
-function pintarAlertas(e){
-  const mensajes = [];
-  const operador = !!sesion;
-  if (e?.ldr) mensajes.push({
-    tipo: "red", icono: "!", nivel: "Emergencia",
-    titulo: "Paro de emergencia",
-    texto: operador ? "El sensor LDR detectó una falla en la tubería. El riego está bloqueado." : "El sistema activó el bloqueo de seguridad del riego."
-  });
-  if (e && !e.agua) mensajes.push({
-    tipo: "amber", icono: "!", nivel: "Advertencia",
-    titulo: "Sin nivel de agua confirmado",
-    texto: operador ? "El tanque está vacío o el sensor ultrasónico no entrega una lectura. El riego no puede encender." : "El sistema necesita confirmar el nivel de agua para permitir el riego."
-  });
-  if (e && (e.suelo == null || e.suelo < 0)) mensajes.push({
-    tipo: "gray", icono: "i", nivel: "Aviso de sensor",
-    titulo: "Sin lectura de humedad del suelo",
-    texto: operador ? "No llegan datos por radio. El riego por humedad queda en espera." : "La medición de humedad del suelo está temporalmente fuera de servicio."
-  });
-
-  const contenido = mensajes.map(a =>
-    '<article class="alert ' + a.tipo + '"><span class="alert-icono" aria-hidden="true">' + a.icono +
-    '</span><div><small>' + a.nivel + '</small><h2>' + a.titulo + '</h2><p>' + a.texto + '</p></div></article>'
-  ).join("");
-  const alertas = $("alertas");
-  if (alertas.dataset.contenido !== contenido) {
-    alertas.dataset.contenido = contenido;
-    alertas.innerHTML = contenido;
-  }
-}
-
 function pintar(e){
   pintarConexion();
   if (e.rssi) chip("chipWifi", "WiFi: " + (e.rssi > -60 ? "excelente" : e.rssi > -70 ? "buena" : e.rssi > -80 ? "regular" : "débil"), "");
 
-  pintarAlertas(e);
+  let a = "";
+  if (e.ldr) a += '<div class="alert red">⛔ <div><b>Paro de emergencia.</b> El sensor LDR detectó una falla en la tubería. El riego está bloqueado.</div></div>';
+  if (!e.agua) a += '<div class="alert amber">⚠️ <div><b>Tanque sin agua</b> (o el ultrasónico no da lectura). El riego no puede encender.</div></div>';
+  if (e.suelo == null || e.suelo < 0) a += '<div class="alert gray">📡 <div><b>Sin datos del sensor de suelo.</b> No llegan datos por radio; el riego por humedad queda en espera.</div></div>';
+  $("alertas").innerHTML = a;
 
   const regando = e.r1 || e.r2;
   $("gota").className = "gota" + (regando ? " on" : ""); $("gota").textContent = regando ? "💧" : "🌿";
@@ -1141,9 +918,6 @@ $("btnAjustes").addEventListener("click", () => {
 });
 
 // ================== ENTRADA / SESIÓN ==================
-$("elegirVisitante").addEventListener("click", () => elegirPerfil(false));
-$("elegirOperador").addEventListener("click", () => elegirPerfil(true));
-$("verClave").addEventListener("click", () => mostrarClave($("lp").type === "password"));
 $("btnVisitante").addEventListener("click", entrarVisitante);
 $("formLogin").addEventListener("submit", ev => {
   ev.preventDefault();
@@ -1152,20 +926,14 @@ $("formLogin").addEventListener("submit", ev => {
   if (u === VISOR_USER) { $("lerr").textContent = "Ese usuario es solo para ver. Usa \"Entrar como visitante\"."; return; }
   iniciarSesion(u, p, $("lr").checked, false);
 });
-$("btnSesion").addEventListener("click", () => {
-  if (sesion) cerrarSesion();
-  else {
-    elegirPerfil(true);
-    mostrarEntrada("");
-    $("lu").focus();
-  }
-});
+$("btnSesion").addEventListener("click", () => sesion ? cerrarSesion() : mostrarEntrada(""));
+$("btnIrLogin").addEventListener("click", () => mostrarEntrada(""));
 
 setInterval(pintarConexion, 5000);
 
 (function(){
   const c = leer();
-  if (c && c.u && c.p) { elegirPerfil(true); iniciarSesion(c.u, c.p, true, true); }
+  if (c && c.u && c.p) iniciarSesion(c.u, c.p, true, true);
 })();
 </script>
 </body>

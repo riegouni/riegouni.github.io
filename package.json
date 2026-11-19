@@ -1,0 +1,14 @@
+{
+  "name": "riego-uni",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "mqtt": "5.16.1"
+  }
+}

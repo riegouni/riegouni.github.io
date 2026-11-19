@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Riego Inteligente UNI</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 610 377%27%3E%3Cpath fill=%27%23063581%27 d=%27M0 0h610v377H0z%27/%3E%3Cpath fill=%27%23fff%27 d=%27M102 0h25v252h102V95h152v282h-25V126H254v157H102zM483 0h25v95h102v31H508v157h-25z%27/%3E%3C/svg%3E">
 <meta name="theme-color" content="#000000">
 <script src="https://cdn.jsdelivr.net/npm/mqtt@5/dist/mqtt.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -711,6 +712,9 @@
 const BROKER_URL = "wss://tf31ff2d.ala.us-east-1.emqxsl.com:8084/mqtt";
 // Usuario PÚBLICO de solo lectura (en EMQX tiene prohibido publicar).
 const VISOR_USER = "visor";
+// GitHub Pages es un sitio estático (no existe /api/lecturas): ahí el visitante
+// se conecta directo a EMQX con esta cuenta de SOLO LECTURA.
+const VISOR_PASS = "verRiegoUNI2026";
 const T_ESTADO = "riego_uni/estado", T_CMD = "riego_uni/cmd", T_ONLINE = "riego_uni/online", T_HIST = "riego_uni/historial";
 const GUARDADO = "riegoUniSesion";
 
@@ -808,13 +812,30 @@ function detenerLecturas(){
   lecturaActiva = null;
 }
 
-function entrarVisitante(){
+async function hayServicioLecturas(){
+  try {
+    const r = await fetch("./api/lecturas", { method: "HEAD", cache: "no-store", signal: AbortSignal.timeout(5000) });
+    return r.ok;
+  } catch { return false; }
+}
+
+async function entrarVisitante(){
   detenerLecturas();
   if (cliente) { cliente.end(true); cliente = null; }
   const control = new AbortController();
   lecturaActiva = control;
   sesion = null;
   mostrarApp();
+  chip("chipNube", "Nube: conectando…", "wait");
+
+  // Sin servidor Node (por ejemplo en GitHub Pages): conexión MQTT directa de solo lectura.
+  if (!(await hayServicioLecturas())) {
+    if (control.signal.aborted) return;
+    if (typeof mqtt === "undefined") { chip("chipNube", "Nube: no se pudo cargar MQTT. Recarga la página.", "bad"); return; }
+    const ok = await conectar(VISOR_USER, VISOR_PASS);
+    if (ok === false) chip("chipNube", "Nube: EMQX rechazó el usuario visor", "bad");
+    return;
+  }
   chip("chipNube", "Nube: consultando lecturas…", "wait");
 
   let ultimaLectura = null;

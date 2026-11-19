@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: riego-uni-prueba
+    runtime: node
+    plan: free
+    branch: diseno-y-lecturas-mqtt
+    autoDeployTrigger: "off"
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: HOST
+        value: "0.0.0.0"
+      - key: MQTT_URL
+        value: "wss://tf31ff2d.ala.us-east-1.emqxsl.com:8084/mqtt"
+      - key: MQTT_VIEWER_PASSWORD
+        sync: false

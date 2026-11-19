@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Riego Inteligente UNI</title>
+<meta name="theme-color" content="#0f5132">
+<script src="https://cdn.jsdelivr.net/npm/mqtt@5/dist/mqtt.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#f2f5f1; --card:#fff; --ink:#13201a; --ink2:#4b5951; --muted:#7a877f; --line:#e2e9e3;
+    --brand:#0f5132; --brand2:#198754; --brandSoft:#e4f3ea;
+    --agua:#2a78d6; --aguaSoft:#e7f0fb; --temp:#eb6834; --tempSoft:#fdeee6; --tanque:#1baf7a; --tanqueSoft:#e3f6ee;
+    --ok:#198754; --warn:#a86a0c; --bad:#c0392b;
+    --r:18px; --sombra:0 1px 2px rgba(16,40,28,.05),0 6px 20px rgba(16,40,28,.07);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  button,input{font:inherit}
+  .oculto{display:none!important}
+  .wrap{max-width:1100px;margin:0 auto;padding:0 16px}
+
+  /* ================= PANTALLA DE ENTRADA ================= */
+  #entrada{min-height:100vh;display:grid;place-items:center;padding:24px 16px;
+    background:radial-gradient(1200px 600px at 10% -10%,#2fa36b 0%,transparent 60%),linear-gradient(160deg,#0b3d26 0%,#0f5132 45%,#198754 100%)}
+  .ent{width:100%;max-width:420px;background:#fff;border-radius:24px;box-shadow:0 30px 80px rgba(0,0,0,.28);overflow:hidden}
+  .ent-top{padding:28px 26px 18px;text-align:center}
+  .ent-logo{width:64px;height:64px;border-radius:18px;margin:0 auto 12px;display:grid;place-items:center;font-size:34px;background:var(--brandSoft)}
+  .ent h1{margin:0;font-size:1.45rem}
+  .ent .sub{color:var(--ink2);font-size:.9rem;margin-top:4px}
+  .ent-body{padding:6px 26px 26px}
+  .opc{width:100%;display:flex;align-items:center;gap:14px;text-align:left;border:1.5px solid var(--line);background:#fff;border-radius:16px;padding:14px 16px;cursor:pointer;transition:.15s}
+  .opc:hover{border-color:var(--brand2);background:#f8fcf9}
+  .opc .ico{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:22px;background:var(--aguaSoft);flex:none}
+  .opc b{display:block;font-size:1rem} .opc small{color:var(--ink2)}
+  .sep{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.8rem;margin:16px 0}
+  .sep::before,.sep::after{content:"";flex:1;height:1px;background:var(--line)}
+  .ent h2{font-size:1rem;margin:0 0 10px;display:flex;align-items:center;gap:8px}
+  label.f{font-size:.8rem;color:var(--ink2);display:block;margin:10px 0 4px}
+  input[type=number],input[type=time],input[type=text],input[type=password]{width:100%;padding:11px 12px;border:1.5px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);outline:none}
+  input:focus{border-color:var(--brand2)}
+  .chk{display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--ink2);margin:12px 0 4px}
+  .err{color:var(--bad);font-size:.85rem;min-height:1.2em;margin:6px 0}
+  .ent-pie{background:#f6f9f6;border-top:1px solid var(--line);padding:12px 26px;font-size:.78rem;color:var(--muted);text-align:center}
+
+  /* ================= BOTONES ================= */
+  .btn{border:0;border-radius:12px;padding:12px 16px;font-weight:600;cursor:pointer;background:var(--brand);color:#fff;transition:filter .15s,transform .05s}
+  .btn:hover{filter:brightness(1.08)} .btn:active{transform:scale(.98)} .btn:disabled{opacity:.45;cursor:not-allowed}
+  .btn.sec{background:#edf2ee;color:var(--ink)} .btn.azul{background:var(--agua)} .btn.full{width:100%}
+
+  /* ================= CABECERA ================= */
+  header{background:linear-gradient(135deg,#0b3d26 0%,#0f5132 40%,#198754 100%);color:#fff;padding:16px 0 60px}
+  .top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .logo{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.15);display:grid;place-items:center;font-size:24px}
+  header h1{font-size:1.2rem;margin:0}
+  header .sub{opacity:.82;font-size:.82rem;margin-top:2px}
+  .usr{margin-left:auto;display:flex;align-items:center;gap:8px}
+  .usr .quien{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:6px 12px;font-size:.84rem;white-space:nowrap}
+  .usr button{border:0;border-radius:999px;padding:7px 14px;font-size:.82rem;font-weight:600;cursor:pointer;background:#fff;color:var(--brand)}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+  .chip{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);padding:5px 10px;border-radius:999px;font-size:.78rem;white-space:nowrap}
+  .chip i{width:8px;height:8px;border-radius:50%;background:#cfd8d3;display:inline-block}
+  .chip.ok i{background:#7ef0a9} .chip.bad i{background:#ff8a7a} .chip.wait i{background:#ffd27a}
+  main.wrap{margin-top:-46px;padding-bottom:10px}
+
+  /* ================= TARJETAS ================= */
+  .card{background:var(--card);border-radius:var(--r);box-shadow:var(--sombra);padding:18px;margin-bottom:14px}
+  .card h2{font-size:1rem;margin:0 0 14px;display:flex;align-items:center;gap:8px}
+  .card h2 small{font-weight:400;color:var(--muted);font-size:.78rem;margin-left:auto}
+  .grid{display:grid;gap:14px}
+  @media(min-width:900px){ .cols{grid-template-columns:1fr 2fr} .cols2{grid-template-columns:2fr 1fr} }
+
+  .alert{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:14px;margin-bottom:10px;font-size:.9rem;box-shadow:var(--sombra)}
+  .alert.red{background:#fde8e6;color:#7d1d14} .alert.amber{background:#fff4e0;color:#6b4500} .alert.gray{background:#fff;color:var(--ink2)}
+
+  /* estado del riego */
+  .estado{display:flex;align-items:center;gap:16px}
+  .gota{width:88px;height:88px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:40px;background:#eef3ef;position:relative}
+  .gota.on{background:var(--aguaSoft)}
+  .gota.on::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:3px solid var(--agua);animation:pulso 1.6s ease-out infinite}
+  @keyframes pulso{from{transform:scale(.9);opacity:.7}to{transform:scale(1.18);opacity:0}}
+  .estado b{font-size:1.45rem;display:block}
+  .motivo{color:var(--ink2);font-size:.9rem;margin-top:2px}
+  .badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:.78rem;font-weight:600;background:var(--brandSoft);color:var(--brand);margin-top:8px}
+  .badge.manual{background:#fff4e0;color:#8a5a00} .badge.paro{background:#fde8e6;color:var(--bad)}
+  .salidas{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+  .sal{border:1px solid var(--line);border-radius:12px;padding:9px 11px;font-size:.8rem;color:var(--ink2)}
+  .sal b{display:block;color:var(--ink);font-size:.95rem;margin-top:2px}
+  .sal.on{border-color:var(--agua);background:var(--aguaSoft)}
+
+  /* sensores con medidores */
+  .sens{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  @media(min-width:900px){ .sens{grid-template-columns:repeat(4,1fr)} }
+  .s{border:1px solid var(--line);border-radius:16px;padding:12px;display:flex;flex-direction:column;align-items:center;text-align:center}
+  .s .k{font-size:.8rem;color:var(--ink2);font-weight:600;align-self:stretch;text-align:left}
+  .ring{position:relative;width:104px;height:104px;margin:8px 0 4px}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .val{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:1px;font-size:1.45rem;font-weight:700;font-variant-numeric:tabular-nums}
+  .ring .val small{font-size:.8rem;color:var(--ink2);font-weight:600}
+  .ring circle{fill:none;stroke-width:10}
+  .ring .fondo{stroke:#edf1ee} .ring .arco{stroke-linecap:round;transition:stroke-dashoffset .7s ease}
+  .tag{display:inline-flex;align-items:center;gap:4px;font-size:.75rem;font-weight:600;padding:3px 9px;border-radius:99px;margin-top:4px}
+  .tag.seco{background:#fdecdc;color:#8f4511} .tag.optimo{background:var(--brandSoft);color:var(--brand)} .tag.humedo{background:var(--aguaSoft);color:#1d5ca8} .tag.nd{background:#eef1ef;color:var(--muted)} .tag.calor{background:var(--tempSoft);color:#9a3d12}
+  .n{font-size:.76rem;color:var(--muted);margin-top:4px}
+
+  /* curvas */
+  .barra-graf{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;flex:1 1 330px}
+  .tab{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font-size:.82rem;cursor:pointer;color:var(--ink2)}
+  .tab.sel{background:var(--brand);border-color:var(--brand);color:#fff}
+  .rangos{display:flex;gap:4px;background:#eef2ef;border-radius:10px;padding:3px;margin-left:auto}
+  .rangos button{border:0;background:transparent;padding:5px 11px;border-radius:8px;font-size:.78rem;cursor:pointer;color:var(--ink2)}
+  .rangos button.sel{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+  .resumen{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+  .resumen div{background:#f6f9f6;border-radius:12px;padding:8px 10px;font-size:.75rem;color:var(--ink2)}
+  .resumen b{display:block;font-size:1.05rem;color:var(--ink);font-variant-numeric:tabular-nums}
+  .lienzo{position:relative;height:260px}
+  .vacio{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:var(--muted);font-size:.88rem;padding:20px}
+  .nota{font-size:.78rem;color:var(--muted);margin-top:8px}
+
+  /* control */
+  .candado{text-align:center;padding:14px 4px}
+  .candado .ic{font-size:36px}
+  .candado p{color:var(--ink2);font-size:.9rem;margin:8px 0 14px}
+  .seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:#eef2ef;padding:4px;border-radius:14px}
+  .seg button{border:0;border-radius:10px;padding:12px 6px;background:transparent;cursor:pointer;font-weight:600;color:var(--ink2)}
+  .seg button.sel{background:#fff;color:var(--brand);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+  .seg button.sel[data-modo="paro"]{color:var(--bad)}
+  .hint{font-size:.8rem;color:var(--muted);margin:8px 2px 0}
+  .bloque{border-top:1px solid var(--line);margin-top:16px;padding-top:14px}
+  .bloque h3{font-size:.92rem;margin:0 0 10px}
+  .fila{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+  .fila > *{flex:1}
+  .hor{display:grid;grid-template-columns:auto 1fr 1fr;gap:8px;align-items:end;margin-bottom:8px}
+  .sw{display:flex;align-items:center;gap:6px;font-size:.85rem;padding-bottom:12px}
+  .act{list-style:none;margin:0;padding:0;max-height:300px;overflow:auto}
+  .act li{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:.85rem}
+  .act li:last-child{border-bottom:0}
+  .act .h{color:var(--muted);font-variant-numeric:tabular-nums;flex:none;width:44px}
+  .act .q{color:var(--ink2);font-size:.78rem}
+
+  .modal{position:fixed;inset:0;background:rgba(10,25,18,.5);display:grid;place-items:center;padding:16px;z-index:20}
+  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(30px);background:#13201a;color:#fff;padding:11px 18px;border-radius:12px;font-size:.9rem;opacity:0;transition:.25s;z-index:30;max-width:90vw;text-align:center}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  footer{text-align:center;color:var(--muted);font-size:.78rem;padding:6px 16px 28px}
+</style>
+</head>
+<body>
+
+<!-- ======================= PANTALLA DE ENTRADA ======================= -->
+<section id="entrada">
+  <div class="ent">
+    <div class="ent-top">
+      <div class="ent-logo">🌱</div>
+      <h1>Riego Inteligente UNI</h1>
+      <div class="sub">Monitoreo y control del sistema de riego</div>
+    </div>
+    <div class="ent-body">
+      <button class="opc" id="btnVisitante">
+        <span class="ico">👁️</span>
+        <span><b>Entrar como visitante</b><small>Ver datos y curvas. No necesita contraseña.</small></span>
+      </button>
+
+      <div class="sep">o</div>
+
+      <form id="formLogin" autocomplete="on">
+        <h2>🔐 Iniciar sesión para controlar</h2>
+        <label class="f" for="lu">Usuario</label>
+        <input type="text" id="lu" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="Ej.: control">
+        <label class="f" for="lp">Contraseña</label>
+        <input type="password" id="lp" autocomplete="current-password">
+        <label class="chk"><input type="checkbox" id="lr" checked> Mantener la sesión en este dispositivo</label>
+        <div class="err" id="lerr"></div>
+        <button class="btn full" type="submit" id="btnLogin">Iniciar sesión</button>
+      </form>
+    </div>
+    <div class="ent-pie">Los usuarios con permiso de control los crea el administrador del sistema.</div>
+  </div>
+</section>
+
+<!-- ======================= APLICACIÓN ======================= -->
+<div id="app" class="oculto">
+<header>
+  <div class="wrap">
+    <div class="top">
+      <div class="logo">🌱</div>
+      <div>
+        <h1>Riego Inteligente UNI</h1>
+        <div class="sub">Feria Nacional UNI · nRF24L01 + ESP32 + nube MQTT</div>
+      </div>
+      <div class="usr">
+        <span class="quien" id="quien">👁️ Visitante</span>
+        <button id="btnSesion">Salir</button>
+      </div>
+    </div>
+    <div class="chips">
+      <span class="chip wait" id="chipNube"><i></i>Nube: conectando…</span>
+      <span class="chip wait" id="chipEsp"><i></i>Sistema: esperando datos</span>
+      <span class="chip" id="chipHora"><i></i>Actualizado: –</span>
+      <span class="chip" id="chipWifi"><i></i>WiFi: –</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="alertas"></div>
+
+  <div class="grid cols">
+    <section class="card">
+      <h2>💧 Estado del riego</h2>
+      <div class="estado">
+        <div class="gota" id="gota">🌿</div>
+        <div>
+          <b id="txtRiego">Esperando datos…</b>
+          <div class="motivo" id="txtMotivo">Conectando con el sistema.</div>
+          <span class="badge" id="badgeModo">Modo –</span>
+        </div>
+      </div>
+      <div class="salidas">
+        <div class="sal" id="s1">Por humedad<b>–</b></div>
+        <div class="sal" id="s2">Por temperatura<b>–</b></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>📡 Sensores en vivo <small>se actualiza cada 5 s</small></h2>
+      <div class="sens">
+        <div class="s">
+          <div class="k">🌱 Humedad del suelo</div>
+          <div class="ring"><svg width="104" height="104"><circle class="fondo" cx="52" cy="52" r="42"/><circle class="arco" id="gSuelo" cx="52" cy="52" r="42" stroke="#2a78d6"/></svg><div class="val" id="vSuelo">–</div></div>
+          <span class="tag nd" id="tagSuelo">sin datos</span>
+        </div>
+        <div class="s">
+          <div class="k">🌡️ Temperatura</div>
+          <div class="ring"><svg width="104" height="104"><circle class="fondo" cx="52" cy="52" r="42"/><circle class="arco" id="gTemp" cx="52" cy="52" r="42" stroke="#eb6834"/></svg><div class="val" id="vTemp">–</div></div>
+          <span class="tag nd" id="tagTemp">–</span>
+        </div>
+        <div class="s">
+          <div class="k">💨 Humedad del aire</div>
+          <div class="ring"><svg width="104" height="104"><circle class="fondo" cx="52" cy="52" r="42"/><circle class="arco" id="gHr" cx="52" cy="52" r="42" stroke="#6250d6"/></svg><div class="val" id="vHr">–</div></div>
+          <div class="n">Sensor DHT11</div>
+        </div>
+        <div class="s">
+          <div class="k">🛢️ Tanque de agua</div>
+          <div class="ring"><svg width="104" height="104"><circle class="fondo" cx="52" cy="52" r="42"/><circle class="arco" id="gNivel" cx="52" cy="52" r="42" stroke="#1baf7a"/></svg><div class="val" id="vNivel">–</div></div>
+          <div class="n" id="nNivel">–</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>📈 Curvas y comportamiento</h2>
+    <div class="barra-graf">
+      <div class="tabs">
+        <button class="tab sel" data-var="s">🌱 Humedad suelo</button>
+        <button class="tab" data-var="t">🌡️ Temperatura</button>
+        <button class="tab" data-var="n">🛢️ Tanque</button>
+        <button class="tab" data-var="r">💧 Riego</button>
+      </div>
+      <div class="rangos">
+        <button data-rango="vivo" class="sel">En vivo</button>
+        <button data-rango="6">6 h</button>
+        <button data-rango="24">24 h</button>
+      </div>
+    </div>
+    <div class="resumen">
+      <div>Mínimo<b id="rMin">–</b></div>
+      <div>Promedio<b id="rProm">–</b></div>
+      <div>Máximo<b id="rMax">–</b></div>
+    </div>
+    <div class="lienzo">
+      <canvas id="grafica" aria-label="Gráfica del sensor seleccionado"></canvas>
+      <div class="vacio" id="vacio">Esperando datos…</div>
+    </div>
+    <div class="nota" id="notaGraf"></div>
+  </section>
+
+  <div class="grid cols2">
+    <section class="card" id="control">
+      <h2>🎛️ Control del riego</h2>
+      <div id="bloqueado" class="candado">
+        <div class="ic">🔒</div>
+        <p>Estás como <b>visitante</b>: puedes ver todo, pero no controlar.<br>Inicia sesión con tu usuario para manejar el riego.</p>
+        <button class="btn" id="btnIrLogin">Iniciar sesión</button>
+      </div>
+
+      <div id="desbloqueado" class="oculto">
+        <div class="seg" id="segModo">
+          <button data-modo="auto">🤖 Automático</button>
+          <button data-modo="manual">✋ Manual</button>
+          <button data-modo="paro">⛔ Paro</button>
+        </div>
+        <div class="hint" id="hintModo"></div>
+
+        <div class="bloque">
+          <h3>Riego manual</h3>
+          <div class="fila">
+            <button class="btn azul" id="btnOn">💧 Encender riego</button>
+            <button class="btn sec" id="btnOff">Apagar riego</button>
+          </div>
+          <div class="fila" style="margin-top:10px">
+            <div><label class="f" for="minutos">Regar por (minutos)</label><input type="number" id="minutos" min="1" max="240" value="10"></div>
+            <button class="btn" id="btnTemp" style="flex:none">⏱️ Regar</button>
+          </div>
+          <div class="hint" id="hintTemp">Riega ese tiempo y se apaga solo.</div>
+        </div>
+
+        <div class="bloque">
+          <h3>Ajustes del modo automático</h3>
+          <div class="fila">
+            <div><label class="f" for="slim">Regar si la humedad baja de (%)</label><input type="number" id="slim" min="0" max="95"></div>
+            <div><label class="f" for="tlim">Regar si la temperatura pasa de (°C)</label><input type="number" id="tlim" min="0" max="60" step="0.5"></div>
+          </div>
+          <div class="hint">Por humedad: enciende bajo el límite y apaga 5 puntos arriba.</div>
+          <button class="btn full" id="btnAjustes" style="margin-top:10px">Guardar ajustes</button>
+        </div>
+
+        <div class="bloque">
+          <h3>Horarios diarios</h3>
+          <div class="hor">
+            <label class="sw"><input type="checkbox" id="a1"> 1</label>
+            <div><label class="f" for="h1">Hora</label><input type="time" id="h1"></div>
+            <div><label class="f" for="d1">Minutos</label><input type="number" id="d1" min="1" max="240"></div>
+          </div>
+          <div class="hor">
+            <label class="sw"><input type="checkbox" id="a2"> 2</label>
+            <div><label class="f" for="h2">Hora</label><input type="time" id="h2"></div>
+            <div><label class="f" for="d2">Minutos</label><input type="number" id="d2" min="1" max="240"></div>
+          </div>
+          <div class="hint">Se cumplen aunque esta página esté cerrada (no en modo Paro).</div>
+          <button class="btn full" id="btnHor" style="margin-top:10px">Guardar horarios</button>
+        </div>
+        <div class="hint" style="margin-top:14px">🛡️ Por seguridad, el riego no enciende con el tanque vacío ni con alarma del LDR.</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>🧾 Actividad <small>en este dispositivo</small></h2>
+      <ul class="act" id="actividad"><li><span class="h">–</span><span>Sin acciones todavía.</span></li></ul>
+    </section>
+  </div>
+</main>
+<footer>UNI · Sistema de Riego Inteligente · Feria Nacional</footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ================== CONFIGURACIÓN ==================
+const BROKER_URL = "wss://tf31ff2d.ala.us-east-1.emqxsl.com:8084/mqtt";
+// Usuario PÚBLICO de solo lectura (en EMQX tiene prohibido publicar).
+const VISOR_USER = "visor";
+const VISOR_PASS = "verRiegoUNI2026";
+const T_ESTADO = "riego_uni/estado", T_CMD = "riego_uni/cmd", T_ONLINE = "riego_uni/online", T_HIST = "riego_uni/historial";
+const GUARDADO = "riegoUniSesion";
+
+// ================== UTILIDADES ==================
+const $ = id => document.getElementById(id);
+let cliente = null, sesion = null;     // sesion = {u, p} si puede controlar; null = visitante
+let est = null, estRecibido = 0, espOnline = null, hist = null;
+const vivo = [], editado = new Set(), actividad = [];
+
+function toast(t){ const el=$("toast"); el.textContent=t; el.classList.add("show"); clearTimeout(toast._t); toast._t=setTimeout(()=>el.classList.remove("show"),2400); }
+function chip(id, txt, clase){ const el=$(id); el.className="chip"+(clase?" "+clase:""); el.innerHTML="<i></i>"+txt; }
+function leer(){ try{ return JSON.parse(localStorage.getItem(GUARDADO)); }catch(e){ return null; } }
+function guardar(c){ try{ localStorage.setItem(GUARDADO, JSON.stringify(c)); }catch(e){} }
+function olvidar(){ try{ localStorage.removeItem(GUARDADO); }catch(e){} }
+function hhmm(ms){ const d=new Date(ms); return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); }
+function esc(t){ return String(t).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+// ================== CONEXIÓN ==================
+function conectar(usuario, clave){
+  return new Promise(resolve => {
+    if (cliente) { try{ cliente.end(true); }catch(e){} }
+    chip("chipNube", "Nube: conectando…", "wait");
+    let listo = false;
+    const c = mqtt.connect(BROKER_URL, {
+      username: usuario, password: clave,
+      clientId: "web-" + usuario + "-" + Math.random().toString(16).slice(2, 8),
+      clean: true, reconnectPeriod: 4000, connectTimeout: 10000
+    });
+    cliente = c;
+    c.on("connect", () => {
+      chip("chipNube", "Nube: conectada", "ok");
+      c.subscribe([T_ESTADO, T_ONLINE, T_HIST], { qos: 1 });
+      if (!listo) { listo = true; resolve(true); }
+    });
+    c.on("message", (topic, payload) => {
+      const txt = payload.toString();
+      if (topic === T_ONLINE) { espOnline = (txt === "1"); pintarConexion(); return; }
+      let d; try { d = JSON.parse(txt); } catch(e){ return; }
+      if (topic === T_ESTADO) { est = d; estRecibido = Date.now(); agregarVivo(d); pintar(d); }
+      if (topic === T_HIST) { hist = d; dibujar(); }
+    });
+    c.on("error", err => {
+      if (/auth|Not authorized|Bad user/i.test(String(err && err.message || err))) {
+        c.end(true); if (!listo) { listo = true; resolve(false); }
+      }
+    });
+    c.on("close", () => { if (cliente === c) chip("chipNube", "Nube: sin conexión", "bad"); });
+    c.on("reconnect", () => { if (cliente === c) chip("chipNube", "Nube: reconectando…", "wait"); });
+    setTimeout(() => { if (!listo) { listo = true; resolve(null); } }, 15000);
+  });
+}
+
+function mostrarApp(){
+  $("entrada").classList.add("oculto"); $("app").classList.remove("oculto");
+  const control = !!sesion;
+  $("quien").textContent = control ? "👤 " + sesion.u + " · control" : "👁️ Visitante";
+  $("btnSesion").textContent = control ? "Cerrar sesión" : "Iniciar sesión";
+  $("bloqueado").classList.toggle("oculto", control);
+  $("desbloqueado").classList.toggle("oculto", !control);
+  if (grafica) grafica.resize();
+  dibujar();
+}
+
+function mostrarEntrada(msg){
+  $("app").classList.add("oculto"); $("entrada").classList.remove("oculto");
+  $("lerr").textContent = msg || ""; $("lp").value = "";
+}
+
+async function entrarVisitante(){
+  sesion = null; mostrarApp();
+  const ok = await conectar(VISOR_USER, VISOR_PASS);
+  if (ok === false) chip("chipNube", "Nube: acceso de visitante no configurado", "bad");
+}
+
+async function iniciarSesion(u, p, recordar, automatico){
+  $("btnLogin").disabled = true; $("btnLogin").textContent = "Entrando…"; $("lerr").textContent = "";
+  const ok = await conectar(u, p);
+  $("btnLogin").disabled = false; $("btnLogin").textContent = "Iniciar sesión";
+  if (ok) {
+    sesion = { u, p };
+    if (recordar) guardar({ u, p }); else olvidar();
+    mostrarApp();
+    if (!automatico) toast("👋 Bienvenido, " + u);
+    registrar("Inició sesión");
+    if (est) pintar(est);
+  } else {
+    if (cliente) { try{ cliente.end(true); }catch(e){} }
+    olvidar();
+    mostrarEntrada(ok === false ? "Usuario o contraseña incorrectos." : "No se pudo conectar. Revisa tu internet.");
+  }
+}
+
+function cerrarSesion(){
+  if (sesion) registrar("Cerró sesión");
+  olvidar(); sesion = null;
+  if (cliente) { try{ cliente.end(true); }catch(e){} }
+  mostrarEntrada("");
+}
+
+function registrar(texto){
+  actividad.unshift({ ms: Date.now(), t: texto, u: sesion ? sesion.u : "visitante" });
+  if (actividad.length > 30) actividad.pop();
+  $("actividad").innerHTML = actividad.map(a => '<li><span class="h">' + hhmm(a.ms) + '</span><span>' + esc(a.t) + '<br><span class="q">por ' + esc(a.u) + '</span></span></li>').join("");
+}
+
+function enviar(orden, texto){
+  if (!sesion) { toast("Inicia sesión para controlar"); return; }
+  if (!cliente || !cliente.connected) { toast("Sin conexión a la nube"); return; }
+  cliente.publish(T_CMD, orden, { qos: 1 }, err => {
+    if (err) { toast("No se pudo enviar la orden"); return; }
+    if (espOnline === false) toast("Enviado, pero el sistema está fuera de línea");
+    else if (texto) toast(texto);
+    if (texto) registrar(texto);
+  });
+}
+
+// ================== PINTAR ==================
+const CIRC = 2 * Math.PI * 42;
+function anillo(id, frac){
+  const el = $(id); el.style.strokeDasharray = CIRC;
+  el.style.strokeDashoffset = CIRC * (1 - Math.max(0, Math.min(1, frac || 0)));
+}
+
+function pintarConexion(){
+  const reciente = Date.now() - estRecibido < 20000;
+  if (reciente && espOnline !== false) chip("chipEsp", "Sistema: en línea", "ok");
+  else if (espOnline === false) chip("chipEsp", "Sistema: fuera de línea", "bad");
+  else if (estRecibido) chip("chipEsp", "Sistema: sin datos recientes", "bad");
+  else chip("chipEsp", "Sistema: esperando datos", "wait");
+  if (estRecibido) {
+    const s = Math.round((Date.now() - estRecibido) / 1000);
+    chip("chipHora", "Actualizado " + (s < 5 ? "ahora" : "hace " + (s < 60 ? s + " s" : Math.round(s/60) + " min")), "");
+  }
+}
+
+function ponerSiNoEditado(id, valor){
+  if (editado.has(id) || document.activeElement === $(id)) return;
+  const el = $(id); if (el.type === "checkbox") el.checked = !!valor; else el.value = valor;
+}
+
+function pintar(e){
+  pintarConexion();
+  if (e.rssi) chip("chipWifi", "WiFi: " + (e.rssi > -60 ? "excelente" : e.rssi > -70 ? "buena" : e.rssi > -80 ? "regular" : "débil"), "");
+
+  let a = "";
+  if (e.ldr) a += '<div class="alert red">⛔ <div><b>Paro de emergencia.</b> El sensor LDR detectó una falla en la tubería. El riego está bloqueado.</div></div>';
+  if (!e.agua) a += '<div class="alert amber">⚠️ <div><b>Tanque sin agua</b> (o el ultrasónico no da lectura). El riego no puede encender.</div></div>';
+  if (e.suelo == null || e.suelo < 0) a += '<div class="alert gray">📡 <div><b>Sin datos del sensor de suelo.</b> No llegan datos por radio; el riego por humedad queda en espera.</div></div>';
+  $("alertas").innerHTML = a;
+
+  const regando = e.r1 || e.r2;
+  $("gota").className = "gota" + (regando ? " on" : ""); $("gota").textContent = regando ? "💧" : "🌿";
+  $("txtRiego").textContent = regando ? "Regando" : "Sin regar";
+  let motivo;
+  if (e.modo === "paro") motivo = "Modo Paro: todo el riego está apagado.";
+  else if (e.temporal > 0) motivo = "Riego por tiempo: quedan " + Math.ceil(e.temporal / 60) + " min.";
+  else if (e.prog) motivo = "Horario programado en curso.";
+  else if (e.modo === "manual") motivo = e.manual ? "Encendido a mano." : "Modo manual: apagado.";
+  else motivo = regando ? (e.r1 ? "El suelo está seco (bajo " + e.slim + " %)." : "La temperatura pasó de " + e.tlim + " °C.") : "Vigilando el suelo y la temperatura.";
+  if (!regando && (e.ldr || !e.agua) && e.modo !== "paro") motivo += " Bloqueado por seguridad.";
+  $("txtMotivo").textContent = motivo;
+  const nombres = { auto: "🤖 Automático", manual: "✋ Manual", paro: "⛔ Paro" };
+  $("badgeModo").textContent = "Modo " + (nombres[e.modo] || e.modo);
+  $("badgeModo").className = "badge" + (e.modo === "manual" ? " manual" : e.modo === "paro" ? " paro" : "");
+  $("s1").className = "sal" + (e.r1 ? " on" : ""); $("s1").innerHTML = "Por humedad<b>" + (e.r1 ? "💧 Encendido" : "Apagado") + "</b>";
+  $("s2").className = "sal" + (e.r2 ? " on" : ""); $("s2").innerHTML = "Por temperatura<b>" + (e.r2 ? "💧 Encendido" : "Apagado") + "</b>";
+
+  // Sensores
+  const sinS = e.suelo == null || e.suelo < 0, lim = e.slim || 30;
+  $("vSuelo").innerHTML = sinS ? "–" : e.suelo + "<small>%</small>"; anillo("gSuelo", sinS ? 0 : e.suelo / 100);
+  let cl = "nd", tx = "sin datos de radio";
+  if (!sinS) { if (e.suelo < lim) { cl = "seco"; tx = "🌵 Seco · regar"; } else if (e.suelo > 75) { cl = "humedo"; tx = "💦 Muy húmedo"; } else { cl = "optimo"; tx = "✅ Adecuada"; } }
+  $("tagSuelo").className = "tag " + cl; $("tagSuelo").textContent = tx;
+  const t = Number(e.temp);
+  $("vTemp").innerHTML = t.toFixed(1) + "<small>°C</small>"; anillo("gTemp", t / 50);
+  $("tagTemp").className = "tag " + (t > e.tlim ? "calor" : "optimo"); $("tagTemp").textContent = t > e.tlim ? "🔥 Sobre " + e.tlim + " °C" : "✅ Bajo " + e.tlim + " °C";
+  $("vHr").innerHTML = Math.round(e.hr) + "<small>%</small>"; anillo("gHr", e.hr / 100);
+  const nv = e.nivel == null ? -1 : e.nivel;
+  $("vNivel").innerHTML = nv < 0 ? "–" : nv + "<small>%</small>"; anillo("gNivel", nv < 0 ? 0 : nv / 100);
+  $("nNivel").textContent = e.dist >= 0 ? (e.agua ? "Con agua" : "Vacío") + " · " + Number(e.dist).toFixed(1) + " cm" : "Sensor sin lectura";
+
+  // Control
+  document.querySelectorAll("#segModo button").forEach(b => b.classList.toggle("sel", b.dataset.modo === e.modo));
+  $("hintModo").textContent = {
+    auto: "Riega solo cuando el suelo está seco o hace mucho calor, y en los horarios.",
+    manual: "Tú decides cuándo regar. Los horarios también funcionan.",
+    paro: "Nada riega: ni sensores, ni horarios, ni botones."
+  }[e.modo] || "";
+  $("hintTemp").textContent = e.temporal > 0
+    ? "Regando por tiempo: quedan " + Math.floor(e.temporal / 60) + " min " + (e.temporal % 60) + " s (Apagar riego lo cancela)."
+    : "Riega ese tiempo y se apaga solo.";
+  $("btnTemp").disabled = e.modo === "paro";
+  ponerSiNoEditado("a1", e.a1); ponerSiNoEditado("h1", e.h1); ponerSiNoEditado("d1", e.d1);
+  ponerSiNoEditado("a2", e.a2); ponerSiNoEditado("h2", e.h2); ponerSiNoEditado("d2", e.d2);
+  ponerSiNoEditado("tlim", e.tlim); ponerSiNoEditado("slim", e.slim);
+
+  if (rango === "vivo") dibujar();
+}
+
+// ================== CURVAS ==================
+let variable = "s", rango = "vivo", grafica = null;
+const VARS = {
+  s: { nombre: "Humedad del suelo", uni: "%", color: "#2a78d6", min: 0, max: 100, tipo: "line", dec: 0 },
+  t: { nombre: "Temperatura", uni: "°C", color: "#eb6834", tipo: "line", dec: 1 },
+  n: { nombre: "Nivel del tanque", uni: "%", color: "#1baf7a", min: 0, max: 100, tipo: "line", dec: 0 },
+  r: { nombre: "Tiempo regando", uni: "%", color: "#2a78d6", min: 0, max: 100, tipo: "bar", dec: 0 }
+};
+
+function agregarVivo(e){
+  vivo.push({ ms: Date.now(), s: e.suelo >= 0 ? e.suelo : null, t: e.temp || null, n: e.nivel >= 0 ? e.nivel : null, r: (e.r1 || e.r2) ? 100 : 0 });
+  while (vivo.length > 180) vivo.shift();
+}
+
+function puntosHistorial(horas){
+  if (!hist || !hist.u || !hist.u.length) return [];
+  let refUp = hist.up, refMs = Date.now();
+  if (est && est.up != null && est.up >= hist.up) { refUp = est.up; refMs = estRecibido; }
+  const desde = Date.now() - horas * 3600e3, pts = [];
+  for (let i = 0; i < hist.u.length; i++) {
+    const ms = refMs - (refUp - hist.u[i]) * 1000;
+    if (ms < desde) continue;
+    pts.push({ ms, s: hist.s[i] >= 0 ? hist.s[i] : null, t: hist.t[i], n: hist.n[i] >= 0 ? hist.n[i] : null, r: hist.r[i] });
+  }
+  return pts;
+}
+
+function dibujar(){
+  if ($("app").classList.contains("oculto")) return;
+  const v = VARS[variable];
+  const pts = rango === "vivo" ? vivo : puntosHistorial(+rango);
+  const datos = pts.map(p => p[variable]);
+  const nums = datos.filter(x => x != null);
+  const hay = nums.length > 0;
+  $("vacio").classList.toggle("oculto", hay);
+  if (!hay) $("vacio").textContent = rango === "vivo"
+    ? "Esperando datos en vivo… (llegan cada 5 segundos)"
+    : "Todavía no hay historial. El sistema guarda un punto cada 5 minutos (el primero al minuto de encender).";
+  const f = x => (+x).toFixed(v.dec) + " " + v.uni;
+  $("rMin").textContent = hay ? f(Math.min(...nums)) : "–";
+  $("rMax").textContent = hay ? f(Math.max(...nums)) : "–";
+  $("rProm").textContent = hay ? f(nums.reduce((a, b) => a + b, 0) / nums.length) : "–";
+
+  const ds = [{
+    label: v.nombre, data: datos, type: v.tipo,
+    borderColor: v.color, backgroundColor: v.tipo === "bar" ? v.color : v.color + "22",
+    fill: v.tipo === "line" && variable !== "t", borderWidth: 2, tension: 0.3, spanGaps: true,
+    pointRadius: 0, pointHoverRadius: 5, pointHitRadius: 12, borderRadius: 4, barPercentage: 0.9
+  }];
+  let nota = "";
+  if (variable === "s" && est) {
+    ds.push({ label: "Límite de riego", data: datos.map(() => est.slim), type: "line", borderColor: "#7a877f", borderDash: [6, 5], borderWidth: 1.5, pointRadius: 0, pointHitRadius: 0, fill: false });
+    nota = "Línea punteada = límite: por debajo de " + est.slim + " % el sistema riega (modo automático).";
+  } else if (variable === "t" && est) {
+    ds.push({ label: "Temperatura límite", data: datos.map(() => est.tlim), type: "line", borderColor: "#7a877f", borderDash: [6, 5], borderWidth: 1.5, pointRadius: 0, pointHitRadius: 0, fill: false });
+    nota = "Línea punteada = temperatura límite (" + est.tlim + " °C).";
+  } else if (variable === "r") nota = rango === "vivo" ? "100 % = regando en ese momento." : "Porcentaje de cada intervalo de 5 min que estuvo regando.";
+  else if (variable === "n") nota = "100 % = tanque lleno (5 cm al agua) · 0 % = vacío (30 cm).";
+  nota += rango === "vivo" ? " · En vivo: últimos 15 minutos." : " · Promedios cada 5 minutos.";
+  $("notaGraf").textContent = nota;
+
+  const opciones = {
+    responsive: true, maintainAspectRatio: false, animation: { duration: 250 },
+    interaction: { mode: "index", intersect: false },
+    plugins: {
+      legend: { display: false },
+      tooltip: { backgroundColor: "#13201a", padding: 10, displayColors: false,
+        callbacks: { label: c => c.raw == null ? c.dataset.label + ": sin dato" : c.dataset.label + ": " + (+c.raw).toFixed(v.dec) + " " + v.uni } }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { color: "#7a877f", maxTicksLimit: 7, maxRotation: 0 } },
+      y: { min: v.min, max: v.max, grid: { color: "#edf1ee" }, border: { display: false }, ticks: { color: "#7a877f", callback: x => x + " " + v.uni } }
+    }
+  };
+  const etiquetas = pts.map(p => hhmm(p.ms));
+  if (grafica && grafica.config.type === v.tipo) {
+    grafica.data.labels = etiquetas; grafica.data.datasets = ds; grafica.options = opciones; grafica.update("none");
+  } else {
+    if (grafica) grafica.destroy();
+    grafica = new Chart($("grafica"), { type: v.tipo, data: { labels: etiquetas, datasets: ds }, options: opciones });
+  }
+}
+
+document.querySelectorAll(".tab").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll(".tab").forEach(x => x.classList.toggle("sel", x === b));
+  variable = b.dataset.var; if (grafica) { grafica.destroy(); grafica = null; } dibujar();
+}));
+document.querySelectorAll(".rangos button").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll(".rangos button").forEach(x => x.classList.toggle("sel", x === b));
+  rango = b.dataset.rango; dibujar();
+}));
+
+// ================== CONTROL ==================
+document.querySelectorAll("#segModo button").forEach(b => b.addEventListener("click", () => {
+  const n = { auto: "Automático", manual: "Manual", paro: "Paro" };
+  enviar("modo=" + b.dataset.modo, "Cambió a modo " + n[b.dataset.modo]);
+}));
+$("btnOn").addEventListener("click", () => enviar("regar=on", "💧 Encendió el riego (manual)"));
+$("btnOff").addEventListener("click", () => enviar("regar=off", "Apagó el riego"));
+$("btnTemp").addEventListener("click", () => {
+  const n = parseInt($("minutos").value, 10);
+  if (!(n >= 1 && n <= 240)) { toast("Escribe entre 1 y 240 minutos"); return; }
+  enviar("regar_min=" + n, "⏱️ Riego por " + n + " min");
+});
+["a1","h1","d1","a2","h2","d2","tlim","slim"].forEach(id => {
+  $(id).addEventListener("input", () => editado.add(id));
+  $(id).addEventListener("change", () => editado.add(id));
+});
+$("btnHor").addEventListener("click", () => {
+  for (const i of [1, 2]) {
+    const h = $("h" + i).value, d = parseInt($("d" + i).value, 10);
+    if (!/^\d{2}:\d{2}$/.test(h) || !(d >= 1 && d <= 240)) { toast("Revisa el horario " + i); return; }
+  }
+  for (const i of [1, 2]) {
+    enviar("h" + i + "=" + $("h" + i).value + "," + parseInt($("d" + i).value, 10) + "," + ($("a" + i).checked ? 1 : 0));
+    ["a" + i, "h" + i, "d" + i].forEach(id => editado.delete(id));
+  }
+  toast("Horarios guardados"); registrar("Guardó los horarios");
+});
+$("btnAjustes").addEventListener("click", () => {
+  const t = parseFloat($("tlim").value), s = parseInt($("slim").value, 10);
+  if (!(t >= 0 && t <= 60)) { toast("Temperatura entre 0 y 60 °C"); return; }
+  if (!(s >= 0 && s <= 95)) { toast("Humedad entre 0 y 95 %"); return; }
+  enviar("tlim=" + t); enviar("slim=" + s, "Ajustes: humedad " + s + " %, temperatura " + t + " °C");
+  editado.delete("tlim"); editado.delete("slim");
+});
+
+// ================== ENTRADA / SESIÓN ==================
+$("btnVisitante").addEventListener("click", entrarVisitante);
+$("formLogin").addEventListener("submit", ev => {
+  ev.preventDefault();
+  const u = $("lu").value.trim(), p = $("lp").value;
+  if (!u || !p) { $("lerr").textContent = "Escribe tu usuario y tu contraseña."; return; }
+  if (u === VISOR_USER) { $("lerr").textContent = "Ese usuario es solo para ver. Usa \"Entrar como visitante\"."; return; }
+  iniciarSesion(u, p, $("lr").checked, false);
+});
+$("btnSesion").addEventListener("click", () => sesion ? cerrarSesion() : mostrarEntrada(""));
+$("btnIrLogin").addEventListener("click", () => mostrarEntrada(""));
+
+setInterval(pintarConexion, 5000);
+
+(function(){
+  if (typeof mqtt === "undefined") { $("lerr").textContent = "Sin internet: no se pudo cargar la página completa. Recarga cuando tengas conexión."; return; }
+  const c = leer();
+  if (c && c.u && c.p) iniciarSesion(c.u, c.p, true, true);
+})();
+</script>
+</body>
+</html>

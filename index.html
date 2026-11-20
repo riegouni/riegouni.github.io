@@ -5,497 +5,557 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Riego Inteligente UNI</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 610 377%27%3E%3Cpath fill=%27%23063581%27 d=%27M0 0h610v377H0z%27/%3E%3Cpath fill=%27%23fff%27 d=%27M102 0h25v252h102V95h152v282h-25V126H254v157H102zM483 0h25v95h102v31H508v157h-25z%27/%3E%3C/svg%3E">
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#0f1e33">
+<meta name="description" content="Panel en vivo del Sistema de Riego Inteligente de la Universidad Nacional de Ingeniería (UNI): humedad del suelo, temperatura, nivel del tanque y estado del riego.">
 <script src="https://cdn.jsdelivr.net/npm/mqtt@5/dist/mqtt.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400..800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@600;700&amp;family=Fira+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
 <style>
   :root {
     color-scheme: light;
-    --negro: #000000;
-    --cafe: #907151;
-    --ceramica: #cebda3;
-    --dorado: #c89844;
-    --verde: #1fa971;
-    --bg: #f3eee5;
-    --card: #fffdf8;
-    --ink: #191711;
-    --ink2: #514a40;
-    --muted: #62574a;
-    --line: #e2d7c6;
-    --brand: #07553a;
-    --brandSoft: #e3f3e9;
-    --water: #15765e;
-    --tempSoft: #f6e9cf;
-    --bad: #9f2e27;
-    --r: 18px;
-    --sombra: 0 12px 32px #3827170d, 0 2px 4px #3827170a;
+    --noche: #0f1e33;
+    --noche-2: #16304f;
+    --uni: #063581;
+    --agua: #0b7fa6;
+    --agua-viva: #38b6d9;
+    --agua-clara: #e0f1f7;
+    --hoja: #2f7d4f;
+    --hoja-clara: #e3f2e8;
+    --trigo: #a8690f;
+    --trigo-clara: #fbf0da;
+    --rojo: #b42318;
+    --rojo-claro: #fdecea;
+    --fondo: #eef2f5;
+    --superficie: #ffffff;
+    --linea: #d6dee6;
+    --tinta: #0f1e33;
+    --tinta-2: #3e4c5e;
+    --tenue: #5b6b7d;
+    --radio-panel: 16px;
+    --radio: 10px;
+    --radio-chico: 6px;
+    --titulo: "Bitter", Georgia, serif;
+    --texto: "Fira Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   }
 
   *, *::before, *::after { box-sizing: border-box; }
-  html { background: var(--bg); color: var(--ink); }
-  body { margin: 0; font: 400 1rem/1.5 Montserrat, system-ui, sans-serif; }
-  button, input { font: inherit; }
+  html { background: var(--fondo); color: var(--tinta); -webkit-text-size-adjust: 100%; }
+  body { margin: 0; font: 400 1rem/1.5 var(--texto); }
+  h1, h2, h3 { text-wrap: balance; }
+  button, input { font: inherit; color: inherit; }
   button { cursor: pointer; }
   button:disabled { cursor: not-allowed; opacity: .5; }
-  :focus-visible { outline: 2px solid var(--brand); outline-offset: 4px; }
-  input[type="checkbox"] { accent-color: var(--brand); }
+  :focus-visible { outline: 3px solid var(--agua-viva); outline-offset: 3px; }
+  input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--uni); }
   .oculto { display: none !important; }
-  .wrap { width: min(100% - 48px, 1280px); margin-inline: auto; }
+  .wrap { width: min(100% - 48px, 1240px); margin-inline: auto; }
+  .ico { width: 1.25em; height: 1.25em; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
-  /* Acceso */
+  /* ---------- Acceso ---------- */
   #entrada {
     min-height: 100svh;
     display: grid;
-    grid-template-columns: minmax(0, 1.3fr) minmax(400px, 1fr);
-    background: var(--card);
+    grid-template-columns: minmax(0, 1.15fr) minmax(360px, .85fr);
+    background: var(--fondo);
   }
   .portada {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    padding: clamp(26px, 5vw, 76px);
-    color: #fffdf8;
+    gap: clamp(24px, 4vh, 44px);
+    padding: clamp(24px, 4.5vw, 64px);
     background:
-      linear-gradient(180deg, #0009 0%, #0000 28%, #0003 48%, #071410ed 82%, #071410 100%),
-      url("./assets/campo-riego.jpg") center / cover no-repeat,
-      #182a22;
-  }
-  .top { display: flex; align-items: center; gap: 13px; }
-  .portada-texto { padding-top: clamp(120px, 29vh, 320px); }
-  .portada-texto::before {
-    display: block;
-    width: 58px;
-    height: 3px;
-    margin-bottom: 22px;
-    border-radius: 3px;
-    background: var(--dorado);
-    content: "";
-  }
-  .portada h1 {
-    margin: 0;
-    font-size: clamp(2.85rem, 6.5vw, 7.25rem);
-    font-weight: 800;
-    line-height: .98;
-    letter-spacing: -.075em;
-  }
-  .portada h1 span { display: block; color: var(--ceramica); }
-  .portada .sub { max-width: 38ch; margin: 22px 0 0; color: #f1e7d8; }
-  .ent { display: grid; align-content: center; min-width: 0; padding: clamp(30px, 6vw, 100px); }
-  .ent > * { width: min(100%, 440px); margin-inline: auto; }
-  .ent-top h2 {
-    margin: 0;
-    font-size: clamp(2rem, 3.2vw, 3.15rem);
-    line-height: 1.05;
-    letter-spacing: -.055em;
-  }
-  .ent-top .sub { margin: 12px 0 25px; color: var(--ink2); font-size: .94rem; }
-  label.f { display: block; margin: 14px 0 6px; color: var(--ink2); font-size: .84rem; font-weight: 650; }
-  input:is([type="number"], [type="time"], [type="text"], [type="password"]) {
-    width: 100%;
-    min-width: 0;
-    min-height: 45px;
-    padding: 10px 12px;
-    border: 1px solid #b29d80;
-    border-radius: 10px;
-    background: #fffefa;
-    color: var(--ink);
-  }
-  .chk { display: flex; align-items: center; gap: 8px; margin: 14px 0; color: var(--ink2); font-size: .84rem; }
-  .err { color: var(--bad); font-size: .84rem; margin: 5px 0 9px; }
-  .err:empty { margin: 0; }
-  /* Cabecera y botones */
-  .btn {
-    min-height: 44px;
-    border: 1px solid transparent;
-    border-radius: 11px;
-    padding: 10px 15px;
-    background: var(--verde);
-    color: #071e15;
-    font-weight: 750;
-    transition: filter .2s;
-  }
-  .btn:not(:disabled):hover { filter: brightness(1.13); }
-  .btn.full { min-height: 46px; }
-  #btnLogin { background: var(--brand); color: #fff; }
-  .btn.sec { background: #eee5d6; border-color: #d7c8b3; color: var(--ink); }
-  .btn.azul { background: var(--water); color: #fff; }
-  .btn.full { width: 100%; }
-  header { background: #101911; color: #fffdf8; }
-  header :focus-visible { outline-color: var(--dorado); }
-  .barra-app { border-bottom: 1px solid #cebda34a; background: var(--negro); }
-  .top { min-height: 74px; padding-block: 10px; }
-  .nombre-app { flex: none; font-size: .9rem; font-weight: 750; }
-  .menu { display: flex; align-items: center; gap: clamp(12px, 2.4vw, 34px); margin-left: clamp(12px, 3vw, 46px); }
-  .menu a { padding-block: 9px; color: #efe4d3; font-size: .83rem; font-weight: 600; text-decoration: none; }
-  .menu a:hover { color: #8cf0b8; text-decoration: underline; text-underline-offset: 5px; }
-  .usr { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-left: auto; }
-  .quien, .chip { border: 1px solid #cebda360; }
-  .quien { padding: 7px 11px; border-radius: 999px; color: #efe4d3; font-size: .8rem; overflow-wrap: anywhere; }
-  #btnSesion {
-    min-height: 42px;
-    padding: 6px 13px;
-    border: 1px solid transparent;
-    border-radius: 9px;
-    background: var(--ceramica);
-    color: var(--negro);
-    font-size: .83rem;
-    font-weight: 750;
-  }
-  #btnSesion:hover { background: #e7d6bb; }
-  .cabecera-panel {
-    padding: clamp(28px, 4.5vw, 58px) 0 70px;
-    background:
-      linear-gradient(90deg, #101911 0%, #101911f0 27%, #1019119c 63%, #10191150 100%),
-      url("./assets/campo-riego.jpg") center 55% / cover no-repeat;
-  }
-  .proyecto {
-    margin: 0 0 8px;
-    color: #ecd1a0;
-    font-size: .77rem;
-    font-weight: 700;
-    letter-spacing: .09em;
-    text-transform: uppercase;
-  }
-  header h1 {
-    margin: 0;
-    font-size: clamp(2.35rem, 5.5vw, 4.25rem);
-    font-weight: 800;
-    line-height: 1.01;
-    letter-spacing: -.06em;
-  }
-  header .sub { margin: 9px 0 0; color: #f0e6d6; font-size: .92rem; }
-  .chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 21px; }
-  .chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 6px 9px;
-    border-radius: 7px;
-    background: #111a13e6;
-    font-size: .78rem;
-  }
-  .chip i { width: 7px; height: 7px; flex: none; border-radius: 50%; background: var(--ceramica); }
-  .chip.ok i { background: #60db9c; }
-  .chip.bad i { background: #ff9a8d; }
-  .chip.wait i { background: #efc577; }
-
-  /* Tablero */
-  main.wrap { position: relative; margin-top: -52px; display: grid; gap: 18px; padding-bottom: 12px; }
-  #alertas:empty { display: none; }
-  #alertas { display: grid; gap: 8px; }
-  .grid { display: grid; gap: 18px; min-width: 0; }
-  .cols { align-items: stretch; }
-  .cols2 { align-items: start; }
-  #resumen, #historial, #control { scroll-margin-top: 18px; }
-  .card {
-    min-width: 0;
-    padding: clamp(16px, 2vw, 24px);
-    border: 1px solid #ded2be;
-    border-radius: var(--r);
-    background: var(--card);
-    box-shadow: var(--sombra);
-  }
-  .card h2 { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin: 0 0 17px; font-size: 1.13rem; line-height: 1.25; letter-spacing: -.018em; }
-  .card h2 small { margin-left: auto; color: var(--muted); font-size: .72rem; font-weight: 500; letter-spacing: normal; }
-  .card h2 .icono { display: grid; place-items: center; width: 32px; height: 32px; flex: none; border-radius: 9px; background: #efe5d3; font-size: .94rem; }
-  .estado-card {
-    display: flex;
-    flex-direction: column;
-    background:
-      radial-gradient(ellipse at 95% 0%, #225d43 0%, transparent 66%),
-      #132a20;
-    border-color: #34523c;
-    color: #fffdf8;
-  }
-  .estado-card h2 .icono { background: #ffffff18; }
-  .estado { display: flex; align-items: center; gap: 14px; min-width: 0; padding-block: 6px; }
-  .gota { display: grid; place-items: center; width: clamp(52px, 7vw, 76px); aspect-ratio: 1; flex: none; border: 1px solid #70c0935c; border-radius: 22px; color: #fff; background: #214c37; font-size: clamp(1.55rem, 3vw, 2rem); position: relative; }
-  .gota.on { background: #285d46; }
-  .gota.on::after { content: ""; position: absolute; inset: -3px; border: 2px solid #63d79f; border-radius: inherit; animation: pulso 1.8s ease-out infinite; }
-  @keyframes pulso { to { transform: scale(1.14); opacity: 0; } }
-  .estado b { display: block; font-size: clamp(1.13rem, 2vw, 1.45rem); line-height: 1.2; overflow-wrap: anywhere; }
-  .motivo { margin-top: 6px; color: #e0e0ce; font-size: .8rem; }
-  .badge, .tag { display: inline-flex; align-items: center; gap: 4px; padding: 4px 9px; border-radius: 99px; font-size: .72rem; font-weight: 700; }
-  .badge { margin-top: 9px; background: #d3efdf; color: #084d32; }
-  .badge.manual { background: #f5dfad; color: #573810; }
-  .badge.paro { background: #f9d8d3; color: #80251f; }
-  .salidas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: auto; padding-top: 16px; }
-  .sal { padding: 8px 10px; border: 1px solid #cebda347; border-radius: 10px; background: #ffffff0a; color: #e0e0ce; font-size: .72rem; }
-  .sal b { display: block; color: #fffdf8; font-size: .82rem; margin-top: 3px; }
-  .sal.on { border-color: #69c69a; background: #23503b; }
-
-  .sens { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
-  .s {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 12px 8px;
-    border: 1px solid var(--line);
-    border-top: 3px solid var(--medidor, var(--verde));
-    border-radius: 12px;
-    background: #f8f4ec;
-    text-align: center;
-  }
-  .s.temperatura { --medidor: var(--dorado); background: #fcf4e5; }
-  .s.aire { --medidor: var(--cafe); }
-  .s.tanque { --medidor: var(--water); background: #edf5ef; }
-  .s.suelo { background: #edf5ec; }
-  .s .k { display: flex; align-items: center; justify-content: center; gap: 5px; min-height: 2.4em; color: var(--ink2); font-size: .74rem; line-height: 1.2; font-weight: 700; }
-  .ring { position: relative; width: min(100%, 104px); aspect-ratio: 1; margin: 4px 0; }
-  .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-  .ring .val { position: absolute; inset: 0; display: grid; place-content: center; grid-auto-flow: column; align-items: baseline; gap: 2px; font-size: clamp(1rem, 2.4vw, 1.45rem); font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; }
-  .ring .val small { color: var(--ink2); font-size: .62rem; }
-  .ring circle { fill: none; stroke-width: 8; }
-  .ring .fondo { stroke: #e9dfcf; }
-  .ring .arco {
-    stroke-dasharray: 264;
-    stroke-dashoffset: 264;
-    stroke-linecap: round;
-    transition: stroke-dashoffset .7s ease;
-  }
-  .tag { margin-top: 3px; justify-content: center; line-height: 1.25; }
-  .tag.seco, .tag.calor { background: var(--tempSoft); color: #714816; }
-  .tag.optimo { background: var(--brandSoft); color: var(--brand); }
-  .tag.humedo { background: #deeee9; color: #125846; }
-  .tag.nd { background: #eee5d7; color: var(--muted); }
-  .n { margin-top: 4px; color: var(--muted); font-size: .71rem; }
-
-  .barra-graf, .tabs, .rangos { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
-  .barra-graf { margin-bottom: 14px; gap: 10px 16px; }
-  .tabs { flex: 1 1 390px; }
-  .tab, .rangos button { min-height: 36px; padding: 6px 10px; color: var(--ink2); font-size: .76rem; font-weight: 650; }
-  .tab { border: 1px solid var(--line); border-radius: 999px; background: #fffaf0; }
-  .tab:hover { border-color: var(--cafe); }
-  .tab.sel { border-color: var(--brand); background: var(--brand); color: #fff; }
-  .rangos { gap: 3px; padding: 3px; border-radius: 10px; background: #ebe1d2; }
-  .rangos button { border: 0; border-radius: 7px; background: transparent; }
-  .rangos button:hover, .rangos button.sel { background: var(--card); color: var(--ink); }
-  .resumen { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 13px; }
-  .resumen div { padding: 7px 10px; border-radius: 10px; background: #f4ebdc; color: var(--ink2); font-size: .71rem; }
-  .resumen b { display: block; color: var(--ink); font-size: 1.05rem; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
-  .lienzo { position: relative; height: clamp(205px, 28vw, 320px); }
-  .lienzo canvas { display: block; max-width: 100%; }
-  .vacio {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-items: center;
-    padding: 18px;
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    background: radial-gradient(circle, #ccb99870 1px, transparent 1.5px) 0 0 / 17px 17px, #fbf7ef;
-    color: var(--ink2);
-    text-align: center;
-    font-size: .87rem;
-    font-weight: 650;
-  }
-  .nota, .hint { margin-top: 8px; color: var(--muted); font-size: .77rem; }
-
-  .seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 12px; background: #ede4d6; }
-  .seg button { min-height: 42px; padding: 8px 3px; border: 0; border-radius: 8px; background: transparent; color: var(--ink2); font-size: .77rem; font-weight: 700; }
-  .seg button:hover, .seg button.sel { background: var(--card); color: var(--brand); }
-  .seg button.sel[data-modo="paro"] { color: var(--bad); }
-  .bloque { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
-  .bloque h3 { margin: 0 0 10px; font-size: .92rem; }
-  .fila { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }
-  .fila > * { flex: 1; }
-  .hor { display: grid; grid-template-columns: auto repeat(2, minmax(0, 1fr)); align-items: end; gap: 8px; margin-bottom: 8px; }
-  .sw { display: flex; align-items: center; gap: 4px; padding-bottom: 12px; font-size: .85rem; }
-  .act { list-style: none; margin: 0; padding: 0; max-height: 300px; overflow: auto; }
-  .act li { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: .83rem; }
-  .act li:last-child { border-bottom: 0; }
-  .act .h { flex: none; width: 44px; color: var(--muted); font-variant-numeric: tabular-nums; }
-  .act .q { color: var(--ink2); font-size: .75rem; }
-  .toast { position: fixed; bottom: 22px; left: 50%; z-index: 30; max-width: 90vw; padding: 11px 18px; border-radius: 11px; transform: translate(-50%, 30px); background: #18251e; color: #fff; opacity: 0; pointer-events: none; text-align: center; font-size: .9rem; transition: .25s; }
-  .toast.show { opacity: 1; transform: translate(-50%, 0); }
-  footer { padding: 12px 16px 26px; color: var(--muted); text-align: center; font-size: .74rem; }
-
-  @media (min-width: 740px) {
-    .sens { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-    .cols2 { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
-  }
-  @media (min-width: 1000px) {
-    .cols { grid-template-columns: minmax(280px, 1fr) minmax(0, 2.4fr); }
-  }
-  @media (max-width: 950px) {
-    .top { flex-wrap: wrap; gap: 8px; }
-    .menu { order: 1; width: 100%; margin-left: 0; border-top: 1px solid #cebda33b; }
-  }
-  @media (max-width: 740px) {
-    #entrada { grid-template-columns: minmax(0, 1fr); }
-    .portada { gap: 22px; padding: 22px; background-position: center 52%; }
-    .portada-texto { padding-top: 35px; }
-    .portada-texto::before { margin-bottom: 14px; }
-    .portada h1 { font-size: clamp(2.55rem, 8.5vw, 4.5rem); }
-    .portada h1 span { display: inline; }
-    .portada .sub { margin-top: 12px; font-size: .88rem; }
-    .ent { padding: 26px 20px 34px; }
-    .wrap { width: calc(100% - 28px); }
-    .cabecera-panel {
-      background-image: linear-gradient(90deg, #101911f5 0%, #101911ba 65%, #10191180 100%), url("./assets/campo-riego.jpg");
-    }
-  }
-  @media (max-width: 440px) {
-    .nombre-app { flex: 1 1 min-content; }
-    .usr { gap: 4px; }
-    .quien { max-width: 120px; font-size: .71rem; }
-    .menu { justify-content: space-between; gap: 6px; }
-    .menu a { font-size: .77rem; }
-    .card h2 small { margin-left: 0; }
-    .barra-graf, .tabs { gap: 6px; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
-  }
-  /* Entrada y navegación por perfil */
-  #entrada {
-    grid-template-columns: minmax(0, 1.08fr) minmax(370px, .92fr);
-    background: #f5eee3;
-  }
-  .portada {
-    gap: 34px;
-    min-height: min(100svh, 850px);
-    padding: clamp(28px, 5vw, 78px);
-    background:
-      linear-gradient(160deg, #080e10aa 0%, transparent 43%, #07120fe8 77%, #07120f 100%),
-      url("./assets/campo-riego.jpg") 52% center / cover no-repeat,
-      #16271f;
+      radial-gradient(120% 80% at 100% 0%, #0a3a7a 0%, transparent 60%),
+      var(--noche);
+    color: #f3f7fb;
   }
   .uni-marca { display: flex; align-items: center; gap: 14px; }
   .uni-placa {
     display: grid;
     place-items: center;
     flex: none;
-    width: 93px;
-    padding: 13px;
-    border-radius: 12px;
+    width: 76px;
+    padding: 10px;
+    border-radius: 8px;
     background: #fff;
   }
   .uni-logo { display: block; width: 100%; height: auto; }
-  .uni-identidad { font-size: .86rem; font-weight: 700; line-height: 1.35; }
-  .uni-identidad small { display: block; color: #e9dbca; font-size: .76rem; font-weight: 500; margin-top: 4px; }
-  .portada-texto { padding-top: 0; }
-  .portada h1 { font-size: clamp(2.9rem, 6.2vw, 6.75rem); }
-  .ent { padding: clamp(24px, 5.1vw, 80px); }
-  .ent > .acceso-card {
-    width: min(100%, 505px);
-    padding: clamp(19px, 3.5vw, 43px);
-    border: 1px solid #dfd1bc;
-    border-radius: 26px;
-    background: var(--card);
-    box-shadow: 0 18px 50px #49392117;
+  .uni-identidad { font-size: .92rem; font-weight: 600; line-height: 1.3; }
+  .uni-identidad small { display: block; margin-top: 3px; color: #a9bdd2; font-size: .82rem; font-weight: 400; }
+  .portada h1 {
+    margin: 0;
+    font-family: var(--titulo);
+    font-size: clamp(2.6rem, 5.4vw, 5.2rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -.02em;
   }
-  .ent-top .sub { margin-bottom: 20px; }
+  .portada .sub { max-width: 44ch; margin: 16px 0 0; color: #c3d3e3; font-size: clamp(1rem, 1.3vw, 1.12rem); }
+  .ilustracion { margin-top: auto; }
+  .ilustracion svg { display: block; width: 100%; height: auto; max-height: 52vh; }
+  .ilustracion figcaption { margin-top: 10px; color: #8ea6bf; font-size: .82rem; }
+
+  .ent { display: grid; align-content: center; min-width: 0; padding: clamp(20px, 5vw, 72px); }
+  .acceso-card {
+    width: min(100%, 460px);
+    margin-inline: auto;
+    padding: clamp(22px, 3.4vw, 40px);
+    border: 1px solid var(--linea);
+    border-radius: var(--radio-panel);
+    background: var(--superficie);
+  }
+  .ent-top h2 { margin: 0; font-family: var(--titulo); font-size: clamp(1.8rem, 2.6vw, 2.3rem); line-height: 1.1; letter-spacing: -.01em; }
+  .ent-top .sub { margin: 8px 0 22px; color: var(--tinta-2); }
   .perfil-opciones {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 4px;
-    margin-bottom: 19px;
-    padding: 5px;
-    border: 1px solid #e1d4c0;
-    border-radius: 13px;
-    background: #f3ecdf;
+    margin-bottom: 20px;
+    padding: 4px;
+    border-radius: var(--radio);
+    background: var(--fondo);
   }
   .perfil-opciones button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     min-height: 44px;
-    padding: 5px;
-    border: 1px solid transparent;
-    border-radius: 9px;
+    border: 0;
+    border-radius: 7px;
     background: transparent;
-    color: #524433;
-    font-weight: 750;
-    font-size: .88rem;
+    color: var(--tinta-2);
+    font-weight: 600;
   }
-  .perfil-opciones button[aria-pressed="true"] {
-    border-color: #9cbfa9;
-    background: #e5f4ea;
-    color: #084833;
-  }
-  .perfil-opciones button:hover { text-decoration: underline; text-underline-offset: 4px; }
-  .perfil-info { margin-bottom: 15px; color: var(--ink2); font-size: .9rem; }
-  .perfil-info h3 { margin: 0 0 6px; color: var(--ink); font-size: 1.08rem; }
+  .perfil-opciones button[aria-pressed="true"] { background: var(--superficie); color: var(--uni); box-shadow: 0 1px 2px #0f1e3326, 0 0 0 1px var(--linea); }
+  .perfil-info { margin-bottom: 16px; color: var(--tinta-2); }
+  .perfil-info h3 { margin: 0 0 4px; color: var(--tinta); font-size: 1.05rem; }
   .perfil-info p { margin: 0; }
-  .clavecaja { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: stretch; gap: 6px; }
-  .clavecaja button {
-    padding: 0 9px;
-    border: 1px solid #b29d80;
-    border-radius: 10px;
-    background: #f4ede1;
-    color: var(--ink);
-    font-size: .78rem;
-    font-weight: 750;
-  }
-  #btnVisitante { background: var(--verde); }
-  #app .uni-placa { width: 49px; padding: 7px; border-radius: 7px; }
-  #app[data-perfil="operador"] .barra-app { border-bottom-color: var(--dorado); }
-  #app[data-perfil="operador"] .quien { background: #c8984430; color: #fff2d3; }
-  .espacio-operador {
+  label.f { display: block; margin: 14px 0 6px; color: var(--tinta-2); font-size: .88rem; font-weight: 500; }
+  input:is([type="number"], [type="time"], [type="text"], [type="password"]) {
+    width: 100%;
     min-width: 0;
-    padding: clamp(14px, 2.5vw, 26px);
-    border: 1px solid #c7a977;
-    border-radius: var(--r);
-    background: #eee2ce;
-    scroll-margin-top: 18px;
+    min-height: 46px;
+    padding: 10px 12px;
+    border: 1px solid #b8c5d2;
+    border-radius: 8px;
+    background: #fff;
+    color: var(--tinta);
+    font-variant-numeric: tabular-nums;
   }
-  .espacio-operador > h2 { margin: 0 0 3px; font-size: clamp(1.28rem, 2.8vw, 1.8rem); letter-spacing: -.035em; }
-  .espacio-operador > p { margin: 0 0 15px; color: var(--ink2); font-size: .9rem; }
+  input:hover { border-color: #8fa1b4; }
+  .clavecaja { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; }
+  .clavecaja button { padding: 0 12px; border: 1px solid #b8c5d2; border-radius: 8px; background: var(--fondo); font-size: .85rem; font-weight: 600; }
+  .chk { display: flex; align-items: center; gap: 9px; margin: 16px 0; color: var(--tinta-2); font-size: .9rem; }
+  .err { margin: 4px 0 10px; color: var(--rojo); font-size: .88rem; }
+  .err:empty { margin: 0; }
 
-  /* Avisos del sistema */
-  #alertas { gap: 12px; }
+  /* ---------- Botones ---------- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 46px;
+    padding: 10px 16px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: var(--uni);
+    color: #fff;
+    font-weight: 600;
+    transition: background-color .15s;
+  }
+  .btn:not(:disabled):hover { background: #0a4299; }
+  .btn.full { width: 100%; }
+  .btn.sec { border-color: #b8c5d2; background: var(--superficie); color: var(--tinta); }
+  .btn.sec:not(:disabled):hover { background: var(--fondo); }
+  .btn.azul { background: var(--agua); }
+  .btn.azul:not(:disabled):hover { background: #096d8f; }
+  #btnVisitante { background: var(--hoja); }
+  #btnVisitante:hover { background: #276b43; }
+
+  /* ---------- Cabecera ---------- */
+  .barra-app { background: var(--noche); color: #f3f7fb; }
+  #app[data-perfil="operador"] .barra-app { box-shadow: inset 0 -3px 0 var(--trigo); }
+  .top { display: flex; align-items: center; gap: 14px; min-height: 68px; padding-block: 10px; }
+  .top .uni-placa { width: 52px; padding: 6px; border-radius: 6px; }
+  .nombre-app { flex: none; font-family: var(--titulo); font-size: 1.05rem; font-weight: 700; }
+  .menu { display: flex; align-items: center; gap: clamp(14px, 2.6vw, 30px); margin-left: clamp(10px, 3vw, 40px); }
+  .menu a { padding-block: 8px; color: #c3d3e3; font-size: .92rem; font-weight: 500; text-decoration: none; }
+  .menu a:hover { color: #fff; text-decoration: underline; text-underline-offset: 6px; }
+  .usr { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-left: auto; }
+  .quien { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border: 1px solid #3a5577; border-radius: var(--radio-chico); color: #dbe6f0; font-size: .85rem; overflow-wrap: anywhere; }
+  #app[data-perfil="operador"] .quien { border-color: #8a6a2c; color: #ffe9bf; }
+  #btnSesion { min-height: 40px; padding: 6px 14px; border: 1px solid #5d7a9c; border-radius: 8px; background: transparent; color: #fff; font-size: .88rem; font-weight: 600; }
+  #btnSesion:hover { background: #ffffff14; }
+  .cabecera-panel {
+    padding: clamp(30px, 4.5vw, 56px) 0 84px;
+    background:
+      linear-gradient(90deg, #0f1e33 0%, #0f1e33eb 38%, #0f1e33a6 70%, #0f1e3366 100%),
+      url("./assets/campo-riego.jpg") center 62% / cover no-repeat,
+      var(--noche);
+    color: #f3f7fb;
+  }
+  .proyecto { margin: 0 0 6px; color: #a9bdd2; font-size: .92rem; }
+  header h1 { margin: 0; font-family: var(--titulo); font-size: clamp(2.1rem, 4.6vw, 3.6rem); font-weight: 700; line-height: 1.05; letter-spacing: -.015em; }
+  header .sub { margin: 8px 0 0; color: #c3d3e3; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+  .chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border: 1px solid #ffffff2b; border-radius: var(--radio-chico); background: #0f1e33b3; color: #e6eef6; font-size: .85rem; font-variant-numeric: tabular-nums; }
+  .chip i { width: 8px; height: 8px; flex: none; border-radius: 50%; background: #8ea6bf; }
+  .chip.ok i { background: #4cd38a; box-shadow: 0 0 0 3px #4cd38a33; }
+  .chip.bad i { background: #ff8a7a; box-shadow: 0 0 0 3px #ff8a7a33; }
+  .chip.wait i { background: #f1c25b; }
+
+  /* ---------- Tablero ---------- */
+  main.wrap { position: relative; display: grid; gap: 20px; margin-top: -56px; padding-bottom: 28px; }
+  #alertas { display: grid; gap: 10px; }
+  #alertas:empty { display: none; }
+  .grid { display: grid; gap: 20px; min-width: 0; }
+  .cols { align-items: stretch; }
+  .cols2 { align-items: start; }
+  #resumen, #historial, #operacion, #como { scroll-margin-top: 16px; }
+  .card { min-width: 0; padding: clamp(18px, 2.2vw, 26px); border: 1px solid var(--linea); border-radius: var(--radio-panel); background: var(--superficie); }
+  .card h2 { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 0 0 18px; font-size: 1.12rem; font-weight: 600; line-height: 1.25; }
+  .card h2 .ico { width: 22px; height: 22px; color: var(--uni); }
+  .card h2 small { margin-left: auto; color: var(--tenue); font-size: .82rem; font-weight: 400; }
+
+  .estado-card { display: flex; flex-direction: column; border-color: var(--noche); background: var(--noche-2); color: #f3f7fb; }
+  .estado-card h2 .ico { color: var(--agua-viva); }
+  .estado { display: flex; align-items: center; gap: 16px; min-width: 0; }
+  .gota {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 72px;
+    aspect-ratio: 1;
+    flex: none;
+    border: 1px solid #ffffff26;
+    border-radius: 50%;
+    background: #0f1e33;
+    color: #7f98b2;
+  }
+  .gota .ico { width: 34px; height: 34px; stroke-width: 1.6; }
+  .gota.on { background: var(--agua); color: #fff; border-color: transparent; }
+  .gota.on .ico { fill: #ffffff33; }
+  .gota.on::after { content: ""; position: absolute; inset: -4px; border: 2px solid var(--agua-viva); border-radius: inherit; animation: pulso 1.8s ease-out infinite; }
+  @keyframes pulso { to { transform: scale(1.18); opacity: 0; } }
+  .estado b { display: block; font-family: var(--titulo); font-size: clamp(1.4rem, 2.4vw, 1.8rem); line-height: 1.15; }
+  .motivo { margin-top: 6px; color: #c3d3e3; font-size: .92rem; }
+  .badge, .tag { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: var(--radio-chico); font-size: .8rem; font-weight: 600; }
+  .badge { margin-top: 10px; background: #e3f2e8; color: #1f5c39; }
+  .badge.manual { background: var(--trigo-clara); color: #6b430a; }
+  .badge.paro { background: var(--rojo-claro); color: #8a1c13; }
+  .salidas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: auto; padding-top: 20px; }
+  .sal { position: relative; padding: 10px 12px 10px 28px; border: 1px solid #ffffff1f; border-radius: var(--radio); color: #a9bdd2; font-size: .82rem; line-height: 1.3; }
+  .sal::before { content: ""; position: absolute; left: 12px; top: 15px; width: 8px; height: 8px; border-radius: 50%; background: #4a6584; }
+  .sal b { display: block; margin-top: 2px; color: #fff; font-size: .95rem; font-weight: 600; }
+  .sal.on { border-color: var(--agua-viva); background: #0b7fa62e; }
+  .sal.on::before { background: var(--agua-viva); box-shadow: 0 0 0 3px #38b6d940; }
+
+  .sens { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; overflow: hidden; border: 1px solid var(--linea); border-radius: var(--radio); background: var(--linea); }
+  .medida { display: flex; flex-direction: column; gap: 8px; min-width: 0; padding: 16px; background: var(--superficie); }
+  .medida .k { display: flex; align-items: center; gap: 8px; color: var(--tinta-2); font-size: .9rem; font-weight: 500; }
+  .medida .k .ico { width: 20px; height: 20px; color: var(--c, var(--hoja)); }
+  .medida.temperatura { --c: var(--trigo); }
+  .medida.aire { --c: #4b6b8f; }
+  .medida.tanque { --c: var(--agua); }
+  .val { font-size: clamp(2rem, 3.2vw, 2.6rem); font-weight: 600; line-height: 1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .val small { margin-left: 3px; color: var(--tenue); font-size: .42em; font-weight: 500; letter-spacing: 0; }
+  .barra { position: relative; height: 8px; border-radius: 4px; background: #e6ecf1; }
+  .barra > span { position: absolute; inset: 0; border-radius: inherit; background: var(--c, var(--hoja)); transform: scaleX(var(--v, 0)); transform-origin: left center; transition: transform .7s ease; }
+  .barra .umbral { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--tinta); }
+  .tag { align-self: flex-start; }
+  .tag.seco, .tag.calor { background: var(--trigo-clara); color: #6b430a; }
+  .tag.optimo { background: var(--hoja-clara); color: #1f5c39; }
+  .tag.humedo { background: var(--agua-clara); color: #0a5873; }
+  .tag.nd { background: var(--fondo); color: var(--tenue); }
+  .n { color: var(--tenue); font-size: .84rem; }
+  .lectura-tanque { display: flex; align-items: center; gap: 14px; }
+  .tanque-svg { width: 46px; height: auto; flex: none; }
+  .tanque-borde { fill: none; stroke: #8fa1b4; stroke-width: 2; }
+  .tanque-marcas { stroke: #8fa1b4; stroke-width: 1.5; }
+  .agua-nivel { fill: var(--agua); transform-box: fill-box; transform-origin: 50% 100%; transform: scaleY(var(--v, 0)); transition: transform .9s ease; }
+
+  .barra-graf, .tabs, .rangos { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .barra-graf { justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+  .tab { display: inline-flex; align-items: center; gap: 7px; min-height: 38px; padding: 6px 12px; border: 1px solid var(--linea); border-radius: 8px; background: var(--superficie); color: var(--tinta-2); font-size: .88rem; font-weight: 500; }
+  .tab .ico { width: 18px; height: 18px; }
+  .tab:hover { border-color: #8fa1b4; }
+  .tab.sel { border-color: var(--uni); background: #eaf0fa; color: var(--uni); font-weight: 600; }
+  .rangos { gap: 2px; padding: 3px; border-radius: 8px; background: var(--fondo); }
+  .rangos button { min-height: 34px; padding: 4px 12px; border: 0; border-radius: 6px; background: transparent; color: var(--tinta-2); font-size: .85rem; font-weight: 500; }
+  .rangos button:hover { color: var(--tinta); }
+  .rangos button.sel { background: var(--superficie); color: var(--tinta); font-weight: 600; box-shadow: 0 1px 2px #0f1e3326; }
+  .resumen { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; margin-bottom: 16px; overflow: hidden; border: 1px solid var(--linea); border-radius: var(--radio); background: var(--linea); }
+  .resumen div { padding: 10px 14px; background: var(--superficie); color: var(--tenue); font-size: .84rem; }
+  .resumen b { display: block; margin-top: 2px; color: var(--tinta); font-size: 1.15rem; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .lienzo { position: relative; height: clamp(220px, 28vw, 320px); }
+  .lienzo canvas { display: block; max-width: 100%; }
+  .vacio { position: absolute; inset: 0; display: grid; place-items: center; padding: 18px; border: 1px dashed #b8c5d2; border-radius: var(--radio); background: #f7f9fb; color: var(--tinta-2); text-align: center; font-size: .92rem; }
+  .nota, .hint { margin-top: 10px; color: var(--tenue); font-size: .86rem; }
+
+  /* ---------- Operación ---------- */
+  .espacio-operador { min-width: 0; padding: clamp(18px, 2.6vw, 28px); border: 1px solid #e2c992; border-radius: var(--radio-panel); background: #fbf6ea; }
+  .espacio-operador > h2 { margin: 0 0 4px; font-family: var(--titulo); font-size: clamp(1.4rem, 2.6vw, 1.8rem); }
+  .espacio-operador > p { margin: 0 0 18px; color: var(--tinta-2); }
+  .seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; padding: 3px; border-radius: var(--radio); background: var(--fondo); }
+  .seg button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 44px; padding: 8px 4px; border: 0; border-radius: 7px; background: transparent; color: var(--tinta-2); font-size: .9rem; font-weight: 500; }
+  .seg button .ico { width: 18px; height: 18px; }
+  .seg button:hover { color: var(--tinta); }
+  .seg button.sel { background: var(--superficie); color: var(--uni); font-weight: 600; box-shadow: 0 1px 2px #0f1e3326; }
+  .seg button.sel[data-modo="paro"] { color: var(--rojo); }
+  .bloque { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--linea); }
+  .bloque h3 { margin: 0 0 10px; font-size: 1rem; font-weight: 600; }
+  .fila { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; }
+  .fila > * { flex: 1 1 160px; }
+  .fila > .btn[style*="flex:none"] { flex: none; }
+  .hor { display: grid; grid-template-columns: auto repeat(2, minmax(0, 1fr)); align-items: end; gap: 10px; margin-bottom: 8px; }
+  .sw { display: flex; align-items: center; gap: 6px; padding-bottom: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .seguridad { display: flex; gap: 10px; margin-top: 20px; padding: 12px 14px; border-radius: var(--radio); background: var(--fondo); color: var(--tinta-2); font-size: .88rem; }
+  .seguridad .ico { width: 20px; height: 20px; color: var(--hoja); }
+  .act { max-height: 320px; margin: 0; padding: 0; overflow: auto; list-style: none; }
+  .act li { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--linea); font-size: .9rem; }
+  .act li:last-child { border-bottom: 0; }
+  .act .h { flex: none; width: 46px; color: var(--tenue); font-variant-numeric: tabular-nums; }
+  .act .q { color: var(--tenue); font-size: .82rem; }
+
+  /* ---------- Avisos ---------- */
   .alert {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
     align-items: start;
-    gap: clamp(10px, 2vw, 20px);
-    padding: clamp(15px, 2.7vw, 29px);
+    gap: 14px;
+    padding: 16px 18px;
     border: 1px solid var(--alerta-borde);
-    border-left-width: 7px;
-    border-radius: 15px;
+    border-left-width: 5px;
+    border-radius: var(--radio);
     background: var(--alerta-fondo);
     color: var(--alerta-tinta);
-    box-shadow: var(--sombra);
   }
-  .alert.red { --alerta-borde: #a72a24; --alerta-fondo: #ffebe7; --alerta-tinta: #6c1c19; }
-  .alert.amber { --alerta-borde: #a76a13; --alerta-fondo: #fff2d6; --alerta-tinta: #653c0a; }
-  .alert.gray { --alerta-borde: #655036; --alerta-fondo: #f9efe2; --alerta-tinta: #4b3b29; }
-  .alert-icono {
-    display: grid;
-    place-items: center;
-    width: clamp(34px, 6vw, 54px);
-    aspect-ratio: 1;
-    border-radius: 11px;
-    background: var(--alerta-borde);
-    color: white;
-    font-size: clamp(1.05rem, 2.2vw, 1.6rem);
-    font-weight: 800;
+  .alert.red { --alerta-borde: #b42318; --alerta-fondo: #fdecea; --alerta-tinta: #6e1610; }
+  .alert.amber { --alerta-borde: #a8690f; --alerta-fondo: #fdf3df; --alerta-tinta: #5c3a09; }
+  .alert.gray { --alerta-borde: #7b8a9b; --alerta-fondo: #f6f8fa; --alerta-tinta: #2d3a49; }
+  .alert-icono { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--alerta-borde); color: #fff; font-size: 1rem; font-weight: 700; }
+  .alert small { display: block; font-size: .82rem; font-weight: 600; opacity: .85; }
+  .alert h2 { margin: 1px 0 0; font-size: 1.08rem; font-weight: 600; line-height: 1.3; }
+  .alert p { margin: 4px 0 0; font-size: .92rem; }
+
+  /* ---------- Cómo funciona ---------- */
+  .pasos { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; counter-reset: paso; }
+  .paso { position: relative; display: grid; grid-template-columns: 52px minmax(0, 1fr); align-content: start; gap: 14px; padding: 0 0 22px; counter-increment: paso; }
+  .paso:last-child { padding-bottom: 0; }
+  .paso:not(:last-child)::after { content: ""; position: absolute; left: 25px; top: 54px; bottom: 6px; width: 2px; background: repeating-linear-gradient(to bottom, var(--agua-viva) 0 4px, transparent 4px 9px); }
+  .paso-icono { position: relative; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: var(--agua-clara); color: var(--agua); }
+  .paso-icono .ico { width: 26px; height: 26px; }
+  .paso-icono::after { content: counter(paso); position: absolute; right: -4px; top: -4px; display: grid; place-items: center; width: 22px; height: 22px; border: 2px solid var(--superficie); border-radius: 50%; background: var(--uni); color: #fff; font-size: .75rem; font-weight: 700; }
+  .paso h3 { margin: 4px 0 2px; font-size: 1rem; font-weight: 600; }
+  .paso p { margin: 0; color: var(--tinta-2); font-size: .9rem; }
+
+  .toast { position: fixed; bottom: 22px; left: 50%; z-index: 30; max-width: 90vw; padding: 12px 18px; border-radius: var(--radio); transform: translate(-50%, 30px); background: var(--noche); color: #fff; opacity: 0; pointer-events: none; text-align: center; font-size: .92rem; transition: .25s; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  footer { padding: 8px 16px 32px; color: var(--tenue); text-align: center; font-size: .85rem; }
+
+  /* ---------- Ilustración ---------- */
+  .gotita { animation: caer 2.4s cubic-bezier(.55, 0, 1, .45) infinite; }
+  @keyframes caer { 0% { transform: translateY(0); opacity: 0; } 12% { opacity: 1; } 75% { opacity: 1; } 100% { transform: translateY(20px); opacity: 0; } }
+
+  @media (min-width: 760px) {
+    .sens { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .cols2 { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+    .pasos { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; }
+    .paso { grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 0; }
+    .paso:not(:last-child)::after { left: 62px; right: -10px; top: 25px; bottom: auto; width: auto; height: 2px; background: repeating-linear-gradient(to right, var(--agua-viva) 0 4px, transparent 4px 9px); }
   }
-  .alert small { display: block; margin-bottom: 3px; font-size: .74rem; font-weight: 800; text-transform: uppercase; }
-  .alert h2 { margin: 0; font-size: clamp(1.16rem, 2.8vw, 1.82rem); line-height: 1.14; letter-spacing: -.025em; }
-  .alert p { margin: 6px 0 0; font-size: .94rem; line-height: 1.42; }
-  @media (max-width: 740px) {
-    #entrada { grid-template-columns: minmax(0, 1fr); }
-    .portada { gap: 26px; min-height: auto; padding: 22px; }
-    .portada h1 { font-size: clamp(2.4rem, 8.8vw, 4.45rem); }
-    .portada .sub { font-size: .9rem; }
-    .uni-placa { width: 75px; padding: 10px; }
-    .ent { padding: 18px 13px 32px; }
+  @media (min-width: 1060px) {
+    .cols { grid-template-columns: minmax(300px, 1fr) minmax(0, 2.3fr); }
+  }
+  @media (max-width: 980px) {
+    #entrada { display: flex; flex-direction: column; background: var(--noche); }
+    .portada { display: contents; }
+    .uni-marca { order: 1; padding: 22px 22px 0; }
+    .portada-texto { order: 2; padding: 22px 22px 28px; }
+    .ent { order: 3; background: var(--fondo); }
+    .ilustracion { order: 4; margin: 0; padding: 26px 22px 30px; color: #f3f7fb; }
+    .ilustracion svg { max-height: none; }
+    .top { flex-wrap: wrap; row-gap: 4px; }
+    .menu { order: 1; width: 100%; margin-left: 0; padding-top: 4px; border-top: 1px solid #ffffff1f; }
+  }
+  @media (max-width: 760px) {
+    .wrap { width: calc(100% - 28px); }
+    .uni-marca { padding: 20px 18px 0; }
+    .portada-texto { padding: 18px 18px 24px; }
+    .ilustracion { padding: 22px 18px 26px; }
+    .uni-placa { width: 64px; padding: 8px; }
+    .ent { padding: 18px 14px 32px; }
+    .cabecera-panel { background-position: 0 0, 70% 60%, 0 0; }
+    .card h2 small { flex-basis: 100%; margin-left: 0; }
+  }
+  @media (max-width: 560px) {
+    .il-et { display: none; }
+  }
+  @media (max-width: 440px) {
+    .top .uni-placa { width: 44px; }
+    .nombre-app { font-size: .98rem; }
+    .quien { max-width: 140px; font-size: .78rem; }
+    #btnSesion { padding-inline: 10px; font-size: .82rem; }
+    .menu { justify-content: space-between; gap: 6px; }
+    .medida { padding: 14px 12px; }
+    .salidas { grid-template-columns: minmax(0, 1fr); }
+    .resumen div { padding: 8px 10px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    .gotita { animation: none; opacity: 0; }
   }
 </style>
 </head>
 <body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-gota" viewBox="0 0 24 24"><path d="M12 3.2c3.3 4.1 5.6 7.3 5.6 10.2a5.6 5.6 0 0 1-11.2 0c0-2.9 2.3-6.1 5.6-10.2z"/><path d="M9.3 14.2a2.8 2.8 0 0 0 2.7 2.6"/></symbol>
+  <symbol id="i-suelo" viewBox="0 0 24 24"><path d="M12 19v-6.5"/><path d="M12 12.5c0-3.3 2.2-5.4 6.3-5.4 0 3.3-2.2 5.4-6.3 5.4z"/><path d="M12 14.6c0-2.6-1.8-4.2-5.2-4.2 0 2.6 1.8 4.2 5.2 4.2z"/><path d="M3 19h18M6 21.5h2M11 21.5h2M16 21.5h2"/></symbol>
+  <symbol id="i-temp" viewBox="0 0 24 24"><path d="M10 13.9V5.5a2 2 0 0 1 4 0v8.4a4 4 0 1 1-4 0z"/><path d="M12 9.5v6.3"/><path d="M17 6h2.5M17 9.5h2.5"/></symbol>
+  <symbol id="i-aire" viewBox="0 0 24 24"><path d="M9 3.5c2 2.5 3.4 4.5 3.4 6.2a3.4 3.4 0 0 1-6.8 0C5.6 8 7 6 9 3.5z"/><path d="M3 16.5c1.5-1 3-1 4.5 0s3 1 4.5 0 3-1 4.5 0 3 1 4.5 0"/><path d="M3 20.5c1.5-1 3-1 4.5 0s3 1 4.5 0 3-1 4.5 0 3 1 4.5 0"/><path d="M15.5 5.5h4.5M17 9.5h3"/></symbol>
+  <symbol id="i-tanque" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="16.5" rx="2.5"/><path d="M5 12.5c2.3 1 4.7 1 7 0s4.7-1 7 0"/><path d="M9 2.5h6"/></symbol>
+  <symbol id="i-nube" viewBox="0 0 24 24"><path d="M7.2 18.5h10a4.2 4.2 0 0 0 .4-8.4 6 6 0 0 0-11.5 1.3 3.6 3.6 0 0 0 1.1 7.1z"/></symbol>
+  <symbol id="i-radio" viewBox="0 0 24 24"><path d="M12 12.5v8.5"/><circle cx="12" cy="10.2" r="1.7"/><path d="M8.4 6.6a5.1 5.1 0 0 0 0 7.2M15.6 6.6a5.1 5.1 0 0 1 0 7.2M5.6 3.8a9.1 9.1 0 0 0 0 12.8M18.4 3.8a9.1 9.1 0 0 1 0 12.8"/></symbol>
+  <symbol id="i-chip" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/><path d="M9 2.5V6M15 2.5V6M9 18v3.5M15 18v3.5M2.5 9H6M2.5 15H6M18 9h3.5M18 15h3.5"/></symbol>
+  <symbol id="i-panel" viewBox="0 0 24 24"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/><path d="M9.5 13.5v-2M12 13.5V8.5M14.5 13.5v-3.5"/></symbol>
+  <symbol id="i-grafica" viewBox="0 0 24 24"><path d="M3.5 4v16.5H21"/><path d="M7 15.5l4-5 3.5 3 5.5-7"/></symbol>
+  <symbol id="i-control" viewBox="0 0 24 24"><path d="M4 7h9M19 7h1M4 17h3M13 17h7"/><circle cx="16" cy="7" r="2.4"/><circle cx="10" cy="17" r="2.4"/></symbol>
+  <symbol id="i-lista" viewBox="0 0 24 24"><path d="M9.5 6.5H20M9.5 12H20M9.5 17.5H20"/><path d="M4 6.5l1.2 1.2L7 5.5M4 12l1.2 1.2L7 11"/><path d="M4.5 17.5h1.5"/></symbol>
+  <symbol id="i-escudo" viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.3-7.5 9.5-4.3-1.2-7.5-4.9-7.5-9.5V6z"/><path d="M9 12l2.1 2.1L15.2 10"/></symbol>
+  <symbol id="i-auto" viewBox="0 0 24 24"><path d="M19.5 12a7.5 7.5 0 0 1-13.4 4.6M4.5 12a7.5 7.5 0 0 1 13.4-4.6"/><path d="M18.3 3.8v3.9h-3.9M5.7 20.2v-3.9h3.9"/></symbol>
+  <symbol id="i-manual" viewBox="0 0 24 24"><path d="M12 3.5v7.5"/><path d="M7.3 6.6a7 7 0 1 0 9.4 0"/></symbol>
+  <symbol id="i-paro" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><rect x="9" y="9" width="6" height="6" rx="1"/></symbol>
+  <symbol id="i-reloj" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+  <symbol id="i-ojo" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-llave" viewBox="0 0 24 24"><circle cx="8" cy="15.5" r="4"/><path d="M10.9 12.6L20 3.5M16.5 7l2.5 2.5M14 9.5l2 2"/></symbol>
+  <symbol id="i-ruta" viewBox="0 0 24 24"><circle cx="5.5" cy="6" r="2.5"/><circle cx="18.5" cy="18" r="2.5"/><path d="M8 6h7.5a3 3 0 0 1 0 6h-7a3 3 0 0 0 0 6H16"/></symbol>
+</svg>
 
 <!-- ======================= PANTALLA DE ENTRADA ======================= -->
 <section id="entrada" aria-labelledby="tituloEntrada">
   <div class="portada">
     <div class="uni-marca"><span class="uni-placa"><svg class="uni-logo" viewBox="0 0 610 377" role="img" aria-label="Logo de la UNI" xmlns="http://www.w3.org/2000/svg"><path fill="#063581" d="M0 0h610v377H0z"/><path fill="#fff" d="M102 0h25v252h102V95h152v282h-25V126H254v157H102zM483 0h25v95h102v31H508v157h-25z"/></svg></span><span class="uni-identidad">Universidad Nacional de Ingeniería<small>Feria Nacional UNI</small></span></div>
     <div class="portada-texto">
-      <h1 id="tituloEntrada">Riego <span>Inteligente UNI</span></h1>
-      <p class="sub">Monitorea el cultivo y el nivel de agua desde cualquier dispositivo.</p>
+      <h1 id="tituloEntrada">Riego Inteligente UNI</h1>
+      <p class="sub">Sensores en el cultivo, radio, un ESP32 y la nube: el riego se decide solo y se vigila desde cualquier teléfono.</p>
     </div>
+    <figure class="ilustracion" style="margin:0">
+      <svg viewBox="0 0 720 470" role="img" aria-labelledby="ilusTitulo ilusDesc" xmlns="http://www.w3.org/2000/svg">
+        <title id="ilusTitulo">Cómo está armado el sistema de riego</title>
+        <desc id="ilusDesc">Un tanque con sensor ultrasónico alimenta una línea de goteo. Un sensor de humedad en el suelo envía la lectura por radio a un ESP32, que la publica en la nube EMQX, y el panel web la muestra.</desc>
+        <defs>
+          <linearGradient id="ilSuelo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d3756"/><stop offset="1" stop-color="#132741"/></linearGradient>
+          <radialGradient id="ilHumedo" cx=".5" cy=".35" r=".6"><stop offset="0" stop-color="#38b6d9" stop-opacity=".42"/><stop offset="1" stop-color="#38b6d9" stop-opacity="0"/></radialGradient>
+          <clipPath id="ilClipTanque"><rect x="42" y="168" width="106" height="130" rx="10"/></clipPath>
+          <g id="ilPlanta">
+            <path d="M0 0C0-18 2-38 0-64" stroke="#6cc08a" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <ellipse cx="-14" cy="-20" rx="15" ry="6" transform="rotate(-24 -14 -20)" fill="#4fa36b"/>
+            <ellipse cx="15" cy="-33" rx="16" ry="6.5" transform="rotate(24 15 -33)" fill="#3e8e5a"/>
+            <ellipse cx="-12" cy="-47" rx="13" ry="5.5" transform="rotate(-30 -12 -47)" fill="#6cc08a"/>
+            <ellipse cx="10" cy="-59" rx="10" ry="4.5" transform="rotate(32 10 -59)" fill="#4fa36b"/>
+            <path d="M0 3C-6 15-10 23-15 31M0 3C5 17 9 25 13 35M0 3v37" stroke="#36577f" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+          </g>
+          <path id="ilGotita" d="M0-4c2.2 2.8 3.4 4.6 3.4 6.1a3.4 3.4 0 0 1-6.8 0C-3.4.6-2.2-1.2 0-4z" fill="#38b6d9"/>
+        </defs>
+
+        <!-- suelo -->
+        <rect x="0" y="340" width="720" height="130" fill="url(#ilSuelo)"/>
+        <path d="M0 340H720" stroke="#4c6e94" stroke-width="1.5"/>
+        <path d="M0 385H720M0 430H720" stroke="#27466b" stroke-width="1.2" stroke-dasharray="2 9"/>
+        <ellipse cx="314" cy="372" rx="46" ry="32" fill="url(#ilHumedo)"/>
+        <ellipse cx="404" cy="372" rx="46" ry="32" fill="url(#ilHumedo)"/>
+        <ellipse cx="574" cy="372" rx="46" ry="32" fill="url(#ilHumedo)"/>
+        <ellipse cx="654" cy="372" rx="46" ry="32" fill="url(#ilHumedo)"/>
+
+        <!-- nube y panel -->
+        <path d="M454 86h92a24 24 0 0 0 2.5-47.9 36 36 0 0 0-68.6 7.4A20.5 20.5 0 0 0 454 86z" fill="#16304f" stroke="#cfe0f0" stroke-width="2"/>
+        <path d="M486 64l8 8 16-16" stroke="#38b6d9" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>
+        <text class="il-et" x="500" y="112" text-anchor="middle" fill="#b9cbdd" font-family="Fira Sans, sans-serif" font-size="13">Nube EMQX (MQTT con TLS)</text>
+        <rect x="636" y="26" width="58" height="104" rx="10" fill="#16304f" stroke="#cfe0f0" stroke-width="2"/>
+        <rect x="642" y="38" width="46" height="78" rx="4" fill="#0f1e33"/>
+        <rect x="648" y="92" width="6" height="18" rx="1.5" fill="#4fa36b"/>
+        <rect x="658" y="78" width="6" height="32" rx="1.5" fill="#38b6d9"/>
+        <rect x="668" y="85" width="6" height="25" rx="1.5" fill="#d99a2b"/>
+        <rect x="678" y="70" width="6" height="40" rx="1.5" fill="#4fa36b"/>
+        <circle cx="665" cy="54" r="9" fill="none" stroke="#38b6d9" stroke-width="3" stroke-dasharray="40 57" transform="rotate(-90 665 54)"/>
+        <text class="il-et" x="665" y="150" text-anchor="middle" fill="#b9cbdd" font-family="Fira Sans, sans-serif" font-size="13">Panel web</text>
+        <path d="M550 62H628" stroke="#8ea6bf" stroke-width="2" stroke-dasharray="3 6" fill="none"/>
+        <path d="M286 120C318 70 380 52 448 60" stroke="#8ea6bf" stroke-width="2" stroke-dasharray="3 6" fill="none"/>
+
+        <!-- tanque -->
+        <path d="M62 300l-6 40M128 300l6 40M58 322h74" stroke="#6e8baa" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <rect x="42" y="168" width="106" height="130" rx="10" fill="#142b47"/>
+        <g clip-path="url(#ilClipTanque)">
+          <rect x="42" y="214" width="106" height="90" fill="#0b7fa6"/>
+          <path d="M42 214q13-6 26 0t26 0 26 0 28 0" stroke="#6fd0ec" stroke-width="2.4" fill="none"/>
+        </g>
+        <rect x="42" y="168" width="106" height="130" rx="10" fill="none" stroke="#9db6cf" stroke-width="2"/>
+        <path d="M136 196h8M136 240h8M136 280h8" stroke="#9db6cf" stroke-width="1.6"/>
+        <rect x="70" y="150" width="50" height="16" rx="3" fill="#2a4a70" stroke="#9db6cf" stroke-width="1.5"/>
+        <circle cx="84" cy="158" r="5" fill="#0f1e33" stroke="#cfe0f0" stroke-width="1.5"/>
+        <circle cx="106" cy="158" r="5" fill="#0f1e33" stroke="#cfe0f0" stroke-width="1.5"/>
+        <path d="M84 168v40M106 168v40" stroke="#6fd0ec" stroke-width="1.6" stroke-dasharray="3 5"/>
+        <text class="il-et" x="95" y="122" text-anchor="middle" fill="#e6eef6" font-family="Fira Sans, sans-serif" font-size="13" font-weight="600">Tanque</text>
+        <text class="il-et" x="95" y="138" text-anchor="middle" fill="#8ea6bf" font-family="Fira Sans, sans-serif" font-size="12">sensor ultrasónico</text>
+
+        <!-- tubería de goteo y relé -->
+        <path d="M148 286H178M212 286h12v46H708" stroke="#7fb2d1" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="178" y="274" width="34" height="24" rx="4" fill="#22406a" stroke="#cfe0f0" stroke-width="1.5"/>
+        <circle cx="195" cy="286" r="4" fill="#38b6d9"/>
+        <text class="il-et" x="195" y="316" text-anchor="middle" fill="#8ea6bf" font-family="Fira Sans, sans-serif" font-size="12">Relé</text>
+
+        <!-- ESP32 -->
+        <path d="M262 206v134" stroke="#6e8baa" stroke-width="3" stroke-linecap="round"/>
+        <path d="M232 206c-2 30-22 50-37 68" stroke="#d99a2b" stroke-width="1.6" fill="none"/>
+        <path d="M226 176c-36-8-70-18-106-18" stroke="#d99a2b" stroke-width="1.6" fill="none"/>
+        <rect x="222" y="160" width="80" height="48" rx="6" fill="#1d3a60" stroke="#cfe0f0" stroke-width="1.5"/>
+        <rect x="244" y="171" width="30" height="24" rx="2" fill="#0f1e33" stroke="#8fa9c4"/>
+        <path d="M249 171v-4M256 171v-4M263 171v-4M270 171v-4M249 195v4M256 195v4M263 195v4M270 195v4" stroke="#8fa9c4" stroke-width="1.2"/>
+        <rect x="306" y="168" width="14" height="22" rx="2" fill="#2e7fd0"/>
+        <path d="M309 173h8M309 178h8M309 183h8" stroke="#bcd9f5" stroke-width="1"/>
+        <circle cx="313" cy="200" r="4.5" fill="#d99a2b"/>
+        <path d="M290 160v-34" stroke="#cfe0f0" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="290" cy="124" r="3.5" fill="#cfe0f0"/>
+        <text class="il-et" x="274" y="230" fill="#e6eef6" font-family="Fira Sans, sans-serif" font-size="13" font-weight="600">ESP32</text>
+        <text class="il-et" x="274" y="246" fill="#8ea6bf" font-family="Fira Sans, sans-serif" font-size="12">DHT11 y LDR</text>
+
+        <!-- cultivo -->
+        <use href="#ilPlanta" x="330" y="340"/>
+        <use href="#ilPlanta" x="420" y="340"/>
+        <use href="#ilPlanta" x="590" y="340"/>
+        <use href="#ilPlanta" x="670" y="340"/>
+        <circle cx="314" cy="332" r="3.5" fill="#a9d6ea"/>
+        <circle cx="404" cy="332" r="3.5" fill="#a9d6ea"/>
+        <circle cx="574" cy="332" r="3.5" fill="#a9d6ea"/>
+        <circle cx="654" cy="332" r="3.5" fill="#a9d6ea"/>
+        <use href="#ilGotita" class="gotita" x="314" y="342"/>
+        <use href="#ilGotita" class="gotita" x="404" y="342" style="animation-delay:.6s"/>
+        <use href="#ilGotita" class="gotita" x="574" y="342" style="animation-delay:1.2s"/>
+        <use href="#ilGotita" class="gotita" x="654" y="342" style="animation-delay:1.8s"/>
+
+        <!-- sensor de suelo y Arduino -->
+        <path d="M458 336v62M470 336v62" stroke="#d9a93b" stroke-width="4" stroke-linecap="round"/>
+        <rect x="453" y="306" width="22" height="30" rx="3" fill="#1d3a60" stroke="#cfe0f0" stroke-width="1.5"/>
+        <path d="M475 316c8 0 10-8 18-10" stroke="#d99a2b" stroke-width="1.6" fill="none"/>
+        <rect x="492" y="268" width="60" height="40" rx="6" fill="#1d3a60" stroke="#cfe0f0" stroke-width="1.5"/>
+        <rect x="502" y="278" width="22" height="20" rx="2" fill="#0f1e33" stroke="#8fa9c4"/>
+        <rect x="530" y="282" width="14" height="12" rx="2" fill="#2f7d4f"/>
+        <path d="M544 268v-24" stroke="#cfe0f0" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="544" cy="242" r="3.5" fill="#cfe0f0"/>
+        <path d="M536 232a12 12 0 0 1 16 0M531 225a20 20 0 0 1 26 0" stroke="#38b6d9" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        <path d="M282 116a12 12 0 0 1 16 0" stroke="#38b6d9" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        <path id="ilRadio" d="M300 124C380 130 470 170 534 238" stroke="#38b6d9" stroke-width="2" stroke-dasharray="1 7" stroke-linecap="round" fill="none"/>
+        <text class="il-et" dy="-9" fill="#7fcfe8" font-family="Fira Sans, sans-serif" font-size="12"><textPath href="#ilRadio" startOffset="50%" text-anchor="middle">Radio nRF24L01, 2,4 GHz</textPath></text>
+        <text class="il-et" x="464" y="420" text-anchor="middle" fill="#b9cbdd" font-family="Fira Sans, sans-serif" font-size="13">Sensor de humedad YL-69</text>
+        <text class="il-et" x="500" y="258" text-anchor="middle" fill="#8ea6bf" font-family="Fira Sans, sans-serif" font-size="12">Arduino UNO</text>
+        <text class="il-et" x="700" y="456" text-anchor="end" fill="#6f8aa8" font-family="Fira Sans, sans-serif" font-size="12">Línea de goteo</text>
+      </svg>
+      <figcaption>El sensor del suelo habla por radio con el ESP32, y el ESP32 publica las lecturas en la nube cada 5 segundos.</figcaption>
+    </figure>
   </div>
   <div class="ent">
     <div class="acceso-card">
@@ -504,18 +564,18 @@
         <p class="sub">Elige cómo quieres entrar.</p>
       </div>
       <div class="perfil-opciones" role="group" aria-label="Tipo de acceso">
-        <button type="button" id="elegirVisitante" aria-pressed="true" aria-controls="perfilVisitante">Visitante</button>
-        <button type="button" id="elegirOperador" aria-pressed="false" aria-controls="formLogin">Operador</button>
+        <button type="button" id="elegirVisitante" aria-pressed="true" aria-controls="perfilVisitante"><svg class="ico" aria-hidden="true"><use href="#i-ojo"/></svg>Visitante</button>
+        <button type="button" id="elegirOperador" aria-pressed="false" aria-controls="formLogin"><svg class="ico" aria-hidden="true"><use href="#i-llave"/></svg>Operador</button>
       </div>
       <div id="perfilVisitante">
         <div class="perfil-info">
           <h3>Consulta las lecturas</h3>
-          <p>Revisa el estado del riego, los sensores y su historial.</p>
+          <p>Mira el estado del riego, los sensores en vivo y el historial de las últimas 24 horas. No necesitas contraseña.</p>
         </div>
         <button class="btn full" id="btnVisitante" type="button">Entrar como visitante</button>
       </div>
       <form id="formLogin" class="oculto" autocomplete="on">
-        <div class="perfil-info"><p>Usa tu cuenta para gestionar el riego, los horarios y los ajustes.</p></div>
+        <div class="perfil-info"><p>Con tu cuenta puedes cambiar el modo, regar a mano, ajustar los límites y programar horarios.</p></div>
         <label class="f" for="lu">Usuario</label>
         <input type="text" id="lu" autocomplete="username" autocapitalize="off" spellcheck="false">
         <label class="f" for="lp">Contraseña</label>
@@ -537,14 +597,15 @@
   <div class="barra-app">
     <div class="wrap top">
       <span class="uni-placa"><svg class="uni-logo" viewBox="0 0 610 377" role="img" aria-label="Logo de la UNI" xmlns="http://www.w3.org/2000/svg"><path fill="#063581" d="M0 0h610v377H0z"/><path fill="#fff" d="M102 0h25v252h102V95h152v282h-25V126H254v157H102zM483 0h25v95h102v31H508v157h-25z"/></svg></span>
-      <span class="nombre-app">Riego UNI</span>
+      <span class="nombre-app">Riego Inteligente UNI</span>
       <nav class="menu" aria-label="Secciones del panel">
         <a href="#resumen">Resumen</a>
         <a href="#historial">Historial</a>
         <a href="#operacion" id="navOperador" class="oculto">Operación</a>
+        <a href="#como">Cómo funciona</a>
       </nav>
       <div class="usr">
-        <span class="quien" id="quien">👁️ Visitante</span>
+        <span class="quien" id="quien">Visitante</span>
         <button id="btnSesion" type="button">Iniciar sesión</button>
       </div>
     </div>
@@ -569,9 +630,9 @@
 
   <div class="grid cols" id="resumen">
     <section class="card estado-card">
-      <h2><span class="icono" aria-hidden="true">💧</span>Estado del riego</h2>
+      <h2><svg class="ico" aria-hidden="true"><use href="#i-gota"/></svg>Estado del riego</h2>
       <div class="estado">
-        <div class="gota" id="gota">🌿</div>
+        <div class="gota" id="gota"><svg class="ico" aria-hidden="true"><use href="#i-gota"/></svg></div>
         <div>
           <b id="txtRiego">Esperando datos…</b>
           <div class="motivo" id="txtMotivo">Conectando con el sistema.</div>
@@ -585,26 +646,37 @@
     </section>
 
     <section class="card">
-      <h2><span class="icono" aria-hidden="true">📡</span>Sensores en vivo <small>Actualización cada 5 s</small></h2>
+      <h2><svg class="ico" aria-hidden="true"><use href="#i-radio"/></svg>Sensores en vivo <small>Se actualizan cada 5 segundos</small></h2>
       <div class="sens">
-        <div class="s suelo">
-          <div class="k">🌱 Humedad del suelo</div>
-          <div class="ring"><svg viewBox="0 0 104 104" aria-hidden="true"><circle class="fondo" cx="52" cy="52" r="42"/><circle class="arco" id="gSuelo" cx="52" cy="52" r="42" stroke="#167c54"/></svg><div class="val" id="vSuelo">–</div></div>
+        <div class="medida suelo">
+          <div class="k"><svg class="ico" aria-hidden="true"><use href="#i-suelo"/></svg>Humedad del suelo</div>
+          <div class="val" id="vSuelo">–</div>
+          <div class="barra" title="La marca indica el límite de riego"><span id="gSuelo"></span><i class="umbral" id="uSuelo" style="left:30%"></i></div>
           <span class="tag nd" id="tagSuelo">sin datos</span>
         </div>
-        <div class="s temperatura">
-          <div class="k">🌡️ Temperatura</div>
-          <div class="ring"><svg viewBox="0 0 104 104" aria-hidden="true"><circle class="fondo" cx="52" cy="52" r="42"/><circle class="arco" id="gTemp" cx="52" cy="52" r="42" stroke="#b47d25"/></svg><div class="val" id="vTemp">–</div></div>
+        <div class="medida temperatura">
+          <div class="k"><svg class="ico" aria-hidden="true"><use href="#i-temp"/></svg>Temperatura</div>
+          <div class="val" id="vTemp">–</div>
+          <div class="barra" title="La marca indica la temperatura límite"><span id="gTemp"></span><i class="umbral" id="uTemp" style="left:60%"></i></div>
           <span class="tag nd" id="tagTemp">–</span>
         </div>
-        <div class="s aire">
-          <div class="k">💨 Humedad del aire</div>
-          <div class="ring"><svg viewBox="0 0 104 104" aria-hidden="true"><circle class="fondo" cx="52" cy="52" r="42"/><circle class="arco" id="gHr" cx="52" cy="52" r="42" stroke="#907151"/></svg><div class="val" id="vHr">–</div></div>
+        <div class="medida aire">
+          <div class="k"><svg class="ico" aria-hidden="true"><use href="#i-aire"/></svg>Humedad del aire</div>
+          <div class="val" id="vHr">–</div>
+          <div class="barra"><span id="gHr"></span></div>
           <div class="n">Sensor DHT11</div>
         </div>
-        <div class="s tanque">
-          <div class="k">🛢️ Tanque de agua</div>
-          <div class="ring"><svg viewBox="0 0 104 104" aria-hidden="true"><circle class="fondo" cx="52" cy="52" r="42"/><circle class="arco" id="gNivel" cx="52" cy="52" r="42" stroke="#15765e"/></svg><div class="val" id="vNivel">–</div></div>
+        <div class="medida tanque">
+          <div class="k"><svg class="ico" aria-hidden="true"><use href="#i-tanque"/></svg>Tanque de agua</div>
+          <div class="lectura-tanque">
+            <svg class="tanque-svg" viewBox="0 0 48 64" aria-hidden="true">
+              <defs><clipPath id="clipTanque"><rect x="4" y="5" width="40" height="55" rx="6"/></clipPath></defs>
+              <g clip-path="url(#clipTanque)"><rect id="gNivel" class="agua-nivel" x="4" y="5" width="40" height="55"/></g>
+              <rect class="tanque-borde" x="4" y="5" width="40" height="55" rx="6"/>
+              <path class="tanque-marcas" d="M36 19h8M36 32.5h8M36 46h8"/>
+            </svg>
+            <div class="val" id="vNivel">–</div>
+          </div>
           <div class="n" id="nNivel">–</div>
         </div>
       </div>
@@ -616,28 +688,28 @@
     <p>Control manual, programación y registro de acciones.</p>
     <div class="grid cols2">
       <section class="card" id="control">
-        <h2><span class="icono" aria-hidden="true">🎛️</span>Control del riego</h2>
+        <h2><svg class="ico" aria-hidden="true"><use href="#i-control"/></svg>Control del riego</h2>
         <div>
           <div class="seg" id="segModo">
-            <button data-modo="auto">🤖 Automático</button>
-            <button data-modo="manual">✋ Manual</button>
-            <button data-modo="paro">⛔ Paro</button>
+            <button data-modo="auto"><svg class="ico" aria-hidden="true"><use href="#i-auto"/></svg>Automático</button>
+            <button data-modo="manual"><svg class="ico" aria-hidden="true"><use href="#i-manual"/></svg>Manual</button>
+            <button data-modo="paro"><svg class="ico" aria-hidden="true"><use href="#i-paro"/></svg>Paro</button>
           </div>
           <div class="hint" id="hintModo"></div>
-  
+
           <div class="bloque">
             <h3>Riego manual</h3>
             <div class="fila">
-              <button class="btn azul" id="btnOn">💧 Encender riego</button>
+              <button class="btn azul" id="btnOn"><svg class="ico" aria-hidden="true"><use href="#i-gota"/></svg>Encender riego</button>
               <button class="btn sec" id="btnOff">Apagar riego</button>
             </div>
-            <div class="fila" style="margin-top:10px">
-              <div><label class="f" for="minutos">Regar por (minutos)</label><input type="number" id="minutos" min="1" max="240" value="10"></div>
-              <button class="btn" id="btnTemp" style="flex:none">⏱️ Regar</button>
+            <div class="fila" style="margin-top:12px">
+              <div><label class="f" for="minutos">Regar durante (minutos)</label><input type="number" id="minutos" min="1" max="240" value="10"></div>
+              <button class="btn" id="btnTemp" style="flex:none"><svg class="ico" aria-hidden="true"><use href="#i-reloj"/></svg>Regar</button>
             </div>
             <div class="hint" id="hintTemp">Riega ese tiempo y se apaga solo.</div>
           </div>
-  
+
           <div class="bloque">
             <h3>Ajustes del modo automático</h3>
             <div class="fila">
@@ -645,9 +717,9 @@
               <div><label class="f" for="tlim">Regar si la temperatura pasa de (°C)</label><input type="number" id="tlim" min="0" max="60" step="0.5"></div>
             </div>
             <div class="hint">Por humedad: enciende bajo el límite y apaga 5 puntos arriba.</div>
-            <button class="btn full" id="btnAjustes" style="margin-top:10px">Guardar ajustes</button>
+            <button class="btn full" id="btnAjustes" style="margin-top:12px">Guardar ajustes</button>
           </div>
-  
+
           <div class="bloque">
             <h3>Horarios diarios</h3>
             <div class="hor">
@@ -661,27 +733,27 @@
               <div><label class="f" for="d2">Minutos</label><input type="number" id="d2" min="1" max="240"></div>
             </div>
             <div class="hint">Se cumplen aunque esta página esté cerrada (no en modo Paro).</div>
-            <button class="btn full" id="btnHor" style="margin-top:10px">Guardar horarios</button>
+            <button class="btn full" id="btnHor" style="margin-top:12px">Guardar horarios</button>
           </div>
-          <div class="hint" style="margin-top:14px">🛡️ Por seguridad, el riego no enciende con el tanque vacío ni con alarma del LDR.</div>
+          <div class="seguridad"><svg class="ico" aria-hidden="true"><use href="#i-escudo"/></svg><span>Por seguridad, el riego no enciende con el tanque vacío ni con la alarma del LDR activa.</span></div>
         </div>
       </section>
-  
+
       <section class="card">
-        <h2><span class="icono" aria-hidden="true">🧾</span>Actividad <small>En este dispositivo</small></h2>
+        <h2><svg class="ico" aria-hidden="true"><use href="#i-lista"/></svg>Actividad <small>En este dispositivo</small></h2>
         <ul class="act" id="actividad"><li><span class="h">–</span><span>Sin acciones todavía.</span></li></ul>
       </section>
     </div>
   </section>
 
   <section class="card" id="historial">
-    <h2><span class="icono" aria-hidden="true">📈</span>Historial de lecturas</h2>
+    <h2><svg class="ico" aria-hidden="true"><use href="#i-grafica"/></svg>Historial de lecturas</h2>
     <div class="barra-graf">
       <div class="tabs">
-        <button class="tab sel" data-var="s">🌱 Humedad suelo</button>
-        <button class="tab" data-var="t">🌡️ Temperatura</button>
-        <button class="tab" data-var="n">🛢️ Tanque</button>
-        <button class="tab" data-var="r">💧 Riego</button>
+        <button class="tab sel" data-var="s"><svg class="ico" aria-hidden="true"><use href="#i-suelo"/></svg>Humedad del suelo</button>
+        <button class="tab" data-var="t"><svg class="ico" aria-hidden="true"><use href="#i-temp"/></svg>Temperatura</button>
+        <button class="tab" data-var="n"><svg class="ico" aria-hidden="true"><use href="#i-tanque"/></svg>Tanque</button>
+        <button class="tab" data-var="r"><svg class="ico" aria-hidden="true"><use href="#i-gota"/></svg>Riego</button>
       </div>
       <div class="rangos">
         <button data-rango="vivo" class="sel">En vivo</button>
@@ -701,8 +773,18 @@
     <div class="nota" id="notaGraf"></div>
   </section>
 
+  <section class="card" id="como" aria-labelledby="tituloComo">
+    <h2 id="tituloComo"><svg class="ico" aria-hidden="true"><use href="#i-ruta"/></svg>Cómo funciona</h2>
+    <ol class="pasos">
+      <li class="paso"><span class="paso-icono"><svg class="ico" aria-hidden="true"><use href="#i-suelo"/></svg></span><div><h3>Sensor en el suelo</h3><p>El YL-69 mide la humedad junto a la raíz del cultivo.</p></div></li>
+      <li class="paso"><span class="paso-icono"><svg class="ico" aria-hidden="true"><use href="#i-radio"/></svg></span><div><h3>Enlace por radio</h3><p>Un Arduino UNO envía la lectura con un nRF24L01 a 2,4 GHz.</p></div></li>
+      <li class="paso"><span class="paso-icono"><svg class="ico" aria-hidden="true"><use href="#i-chip"/></svg></span><div><h3>ESP32 de control</h3><p>Suma temperatura, humedad del aire, nivel del tanque y la alarma LDR, y enciende los relés.</p></div></li>
+      <li class="paso"><span class="paso-icono"><svg class="ico" aria-hidden="true"><use href="#i-nube"/></svg></span><div><h3>Nube EMQX</h3><p>Recibe el estado cada 5 segundos por MQTT cifrado con TLS.</p></div></li>
+      <li class="paso"><span class="paso-icono"><svg class="ico" aria-hidden="true"><use href="#i-panel"/></svg></span><div><h3>Este panel</h3><p>Muestra las lecturas en vivo. Solo los operadores pueden enviar órdenes.</p></div></li>
+    </ol>
+  </section>
 </main>
-<footer>UNI · Sistema de Riego Inteligente · Feria Nacional</footer>
+<footer>Sistema de Riego Inteligente de la Universidad Nacional de Ingeniería, presentado en la Feria Nacional UNI.</footer>
 </div>
 
 <div class="toast" id="toast" role="status"></div>
@@ -783,7 +865,7 @@ function mostrarApp(){
   $("entrada").classList.add("oculto"); $("app").classList.remove("oculto");
   const control = !!sesion;
   $("app").dataset.perfil = control ? "operador" : "visitante";
-  $("quien").textContent = control ? sesion.u + " · Operador" : "Visitante";
+  $("quien").textContent = control ? "Operador: " + sesion.u : "Visitante";
   $("btnSesion").textContent = control ? "Cerrar sesión" : "Acceso de operador";
   $("tituloPanel").textContent = control ? "Panel de operación" : "Panel de visitantes";
   $("bajadaPanel").textContent = control ? "Monitoreo, programación y control del sistema." : "Lecturas, historial y estado del riego.";
@@ -889,7 +971,7 @@ async function iniciarSesion(u, p, recordar, automatico){
     sesion = { u, p };
     if (recordar) guardar({ u, p }); else olvidar();
     mostrarApp();
-    if (!automatico) toast("👋 Bienvenido, " + u);
+    if (!automatico) toast("Bienvenido, " + u);
     registrar("Inició sesión");
     if (est) pintar(est);
   } else {
@@ -927,8 +1009,10 @@ function enviar(orden, texto){
 // ================== PINTAR ==================
 const CIRC = 2 * Math.PI * 42;
 function anillo(id, frac){
-  const el = $(id); el.style.strokeDasharray = CIRC;
-  el.style.strokeDashoffset = CIRC * (1 - Math.max(0, Math.min(1, frac || 0)));
+  $(id).style.setProperty("--v", Math.max(0, Math.min(1, frac || 0)));
+}
+function umbral(id, frac){
+  $(id).style.left = (Math.max(0, Math.min(1, frac || 0)) * 100) + "%";
 }
 
 function pintarConexion(){
@@ -985,7 +1069,7 @@ function pintar(e){
   pintarAlertas(e);
 
   const regando = e.r1 || e.r2;
-  $("gota").className = "gota" + (regando ? " on" : ""); $("gota").textContent = regando ? "💧" : "🌿";
+  $("gota").className = "gota" + (regando ? " on" : "");
   $("txtRiego").textContent = regando ? "Regando" : "Sin regar";
   let motivo;
   if (e.modo === "paro") motivo = "Modo Paro: todo el riego está apagado.";
@@ -995,25 +1079,27 @@ function pintar(e){
   else motivo = regando ? (e.r1 ? "El suelo está seco (bajo " + e.slim + " %)." : "La temperatura pasó de " + e.tlim + " °C.") : "Vigilando el suelo y la temperatura.";
   if (!regando && (e.ldr || !e.agua) && e.modo !== "paro") motivo += " Bloqueado por seguridad.";
   $("txtMotivo").textContent = motivo;
-  const nombres = { auto: "🤖 Automático", manual: "✋ Manual", paro: "⛔ Paro" };
+  const nombres = { auto: "Automático", manual: "Manual", paro: "Paro" };
   $("badgeModo").textContent = "Modo " + (nombres[e.modo] || e.modo);
   $("badgeModo").className = "badge" + (e.modo === "manual" ? " manual" : e.modo === "paro" ? " paro" : "");
-  $("s1").className = "sal" + (e.r1 ? " on" : ""); $("s1").innerHTML = "Por humedad<b>" + (e.r1 ? "💧 Encendido" : "Apagado") + "</b>";
-  $("s2").className = "sal" + (e.r2 ? " on" : ""); $("s2").innerHTML = "Por temperatura<b>" + (e.r2 ? "💧 Encendido" : "Apagado") + "</b>";
+  $("s1").className = "sal" + (e.r1 ? " on" : ""); $("s1").innerHTML = "Por humedad<b>" + (e.r1 ? "Encendido" : "Apagado") + "</b>";
+  $("s2").className = "sal" + (e.r2 ? " on" : ""); $("s2").innerHTML = "Por temperatura<b>" + (e.r2 ? "Encendido" : "Apagado") + "</b>";
 
   // Sensores
   const sinS = e.suelo == null || e.suelo < 0, lim = e.slim || 30;
   $("vSuelo").innerHTML = sinS ? "–" : e.suelo + "<small>%</small>"; anillo("gSuelo", sinS ? 0 : e.suelo / 100);
   let cl = "nd", tx = "sin datos de radio";
-  if (!sinS) { if (e.suelo < lim) { cl = "seco"; tx = "🌵 Seco · regar"; } else if (e.suelo > 75) { cl = "humedo"; tx = "💦 Muy húmedo"; } else { cl = "optimo"; tx = "✅ Adecuada"; } }
+  if (!sinS) { if (e.suelo < lim) { cl = "seco"; tx = "Seco, necesita riego"; } else if (e.suelo > 75) { cl = "humedo"; tx = "Muy húmedo"; } else { cl = "optimo"; tx = "Humedad adecuada"; } }
+  umbral("uSuelo", lim / 100);
   $("tagSuelo").className = "tag " + cl; $("tagSuelo").textContent = tx;
   const t = Number(e.temp);
   $("vTemp").innerHTML = t.toFixed(1) + "<small>°C</small>"; anillo("gTemp", t / 50);
-  $("tagTemp").className = "tag " + (t > e.tlim ? "calor" : "optimo"); $("tagTemp").textContent = t > e.tlim ? "🔥 Sobre " + e.tlim + " °C" : "✅ Bajo " + e.tlim + " °C";
+  $("tagTemp").className = "tag " + (t > e.tlim ? "calor" : "optimo"); $("tagTemp").textContent = t > e.tlim ? "Sobre el límite" : "Bajo el límite";
+  umbral("uTemp", e.tlim / 50);
   $("vHr").innerHTML = Math.round(e.hr) + "<small>%</small>"; anillo("gHr", e.hr / 100);
   const nv = e.nivel == null ? -1 : e.nivel;
   $("vNivel").innerHTML = nv < 0 ? "–" : nv + "<small>%</small>"; anillo("gNivel", nv < 0 ? 0 : nv / 100);
-  $("nNivel").textContent = e.dist >= 0 ? (e.agua ? "Con agua" : "Vacío") + " · " + Number(e.dist).toFixed(1) + " cm" : "Sensor sin lectura";
+  $("nNivel").textContent = e.dist >= 0 ? (e.agua ? "Con agua" : "Vacío") + ". Superficie a " + Number(e.dist).toFixed(1) + " cm del sensor." : "Sensor sin lectura";
 
   // Control
   document.querySelectorAll("#segModo button").forEach(b => b.classList.toggle("sel", b.dataset.modo === e.modo));
@@ -1036,10 +1122,10 @@ function pintar(e){
 // ================== CURVAS ==================
 let variable = "s", rango = "vivo", grafica = null;
 const VARS = {
-  s: { nombre: "Humedad del suelo", uni: "%", color: "#167c54", min: 0, max: 100, tipo: "line", dec: 0 },
-  t: { nombre: "Temperatura", uni: "°C", color: "#b47d25", tipo: "line", dec: 1 },
-  n: { nombre: "Nivel del tanque", uni: "%", color: "#15765e", min: 0, max: 100, tipo: "line", dec: 0 },
-  r: { nombre: "Tiempo regando", uni: "%", color: "#167c54", min: 0, max: 100, tipo: "bar", dec: 0 }
+  s: { nombre: "Humedad del suelo", uni: "%", color: "#2f7d4f", min: 0, max: 100, tipo: "line", dec: 0 },
+  t: { nombre: "Temperatura", uni: "°C", color: "#a8690f", tipo: "line", dec: 1 },
+  n: { nombre: "Nivel del tanque", uni: "%", color: "#0b7fa6", min: 0, max: 100, tipo: "line", dec: 0 },
+  r: { nombre: "Tiempo regando", uni: "%", color: "#0b7fa6", min: 0, max: 100, tipo: "bar", dec: 0 }
 };
 
 function agregarVivo(e){
@@ -1084,14 +1170,14 @@ function dibujar(){
   }];
   let nota = "";
   if (variable === "s" && est) {
-    ds.push({ label: "Límite de riego", data: datos.map(() => est.slim), type: "line", borderColor: "#62574a", borderDash: [6, 5], borderWidth: 1.5, pointRadius: 0, pointHitRadius: 0, fill: false });
-    nota = "Línea punteada = límite: por debajo de " + est.slim + " % el sistema riega (modo automático).";
+    ds.push({ label: "Límite de riego", data: datos.map(() => est.slim), type: "line", borderColor: "#0f1e33", borderDash: [6, 5], borderWidth: 1.5, pointRadius: 0, pointHitRadius: 0, fill: false });
+    nota = "La línea punteada es el límite: por debajo de " + est.slim + " % el sistema riega en modo automático.";
   } else if (variable === "t" && est) {
-    ds.push({ label: "Temperatura límite", data: datos.map(() => est.tlim), type: "line", borderColor: "#62574a", borderDash: [6, 5], borderWidth: 1.5, pointRadius: 0, pointHitRadius: 0, fill: false });
-    nota = "Línea punteada = temperatura límite (" + est.tlim + " °C).";
-  } else if (variable === "r") nota = rango === "vivo" ? "100 % = regando en ese momento." : "Porcentaje de cada intervalo de 5 min que estuvo regando.";
-  else if (variable === "n") nota = "100 % = tanque lleno (5 cm al agua) · 0 % = vacío (30 cm).";
-  nota += rango === "vivo" ? " · En vivo: últimos 15 minutos." : " · Promedios cada 5 minutos.";
+    ds.push({ label: "Temperatura límite", data: datos.map(() => est.tlim), type: "line", borderColor: "#0f1e33", borderDash: [6, 5], borderWidth: 1.5, pointRadius: 0, pointHitRadius: 0, fill: false });
+    nota = "La línea punteada es la temperatura límite (" + est.tlim + " °C).";
+  } else if (variable === "r") nota = rango === "vivo" ? "100 % significa que estaba regando en ese momento." : "Porcentaje de cada intervalo de 5 minutos que estuvo regando.";
+  else if (variable === "n") nota = "100 % es el tanque lleno (agua a 5 cm del sensor) y 0 % es vacío (30 cm).";
+  nota += rango === "vivo" ? " Muestra los últimos 15 minutos." : " Promedios cada 5 minutos.";
   $("notaGraf").textContent = nota;
 
   if (typeof Chart === "undefined") return;
@@ -1100,12 +1186,12 @@ function dibujar(){
     interaction: { mode: "index", intersect: false },
     plugins: {
       legend: { display: false },
-      tooltip: { backgroundColor: "#18251e", padding: 10, displayColors: false,
+      tooltip: { backgroundColor: "#0f1e33", padding: 10, displayColors: false,
         callbacks: { label: c => c.raw == null ? c.dataset.label + ": sin dato" : c.dataset.label + ": " + (+c.raw).toFixed(v.dec) + " " + v.uni } }
     },
     scales: {
-      x: { grid: { display: false }, ticks: { color: "#62574a", maxTicksLimit: 7, maxRotation: 0 } },
-      y: { min: v.min, max: v.max, grid: { color: "#e9dfcf" }, border: { display: false }, ticks: { color: "#62574a", callback: x => x + " " + v.uni } }
+      x: { grid: { display: false }, ticks: { color: "#5b6b7d", maxTicksLimit: 7, maxRotation: 0, font: { family: "Fira Sans" } } },
+      y: { min: v.min, max: v.max, grid: { color: "#e6ecf1" }, border: { display: false }, ticks: { color: "#5b6b7d", font: { family: "Fira Sans" }, callback: x => x + " " + v.uni } }
     }
   };
   const etiquetas = pts.map(p => hhmm(p.ms));
@@ -1131,12 +1217,12 @@ document.querySelectorAll("#segModo button").forEach(b => b.addEventListener("cl
   const n = { auto: "Automático", manual: "Manual", paro: "Paro" };
   enviar("modo=" + b.dataset.modo, "Cambió a modo " + n[b.dataset.modo]);
 }));
-$("btnOn").addEventListener("click", () => enviar("regar=on", "💧 Encendió el riego (manual)"));
+$("btnOn").addEventListener("click", () => enviar("regar=on", "Encendió el riego (manual)"));
 $("btnOff").addEventListener("click", () => enviar("regar=off", "Apagó el riego"));
 $("btnTemp").addEventListener("click", () => {
   const n = parseInt($("minutos").value, 10);
   if (!(n >= 1 && n <= 240)) { toast("Escribe entre 1 y 240 minutos"); return; }
-  enviar("regar_min=" + n, "⏱️ Riego por " + n + " min");
+  enviar("regar_min=" + n, "Riego por " + n + " min");
 });
 ["a1","h1","d1","a2","h2","d2","tlim","slim"].forEach(id => {
   $(id).addEventListener("input", () => editado.add(id));

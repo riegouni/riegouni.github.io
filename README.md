@@ -2,7 +2,7 @@
 
 Panel web del **Sistema de Riego Inteligente** presentado en la Feria Nacional UNI.
 
-**Abrir el panel:** https://locurasdejose15-cloud.github.io/riego-uni/
+**Abrir el panel:** https://riegouni.github.io/
 
 ## Qué se puede hacer
 - **Visitantes** (sin contraseña): ver el estado del riego, los sensores en vivo y las curvas de las últimas 24 h.

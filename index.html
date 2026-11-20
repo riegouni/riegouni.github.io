@@ -336,8 +336,35 @@
   .redes .vacia { color: var(--tenue); }
   .quitar { flex: none; min-height: 2.125rem; padding: 0.25rem 0.625rem; border: 1px solid #b8c5d2; border-radius: 0.375rem; background: var(--superficie); color: var(--rojo); font-size: .82rem; font-weight: 600; }
   .quitar:not(:disabled):hover { border-color: var(--rojo); }
-  #formWifi { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--linea); }
-  #formWifi h3 { margin: 0 0 2px; font-size: 1rem; font-weight: 600; }
+  .cerca-cab { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 0.75rem; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--linea); }
+  .cerca-cab .sub3 { margin: 0; }
+  .btn.chico { min-height: 2.375rem; padding: 0.375rem 0.8125rem; font-size: .9rem; }
+  .cerca-estado { margin: 0.375rem 0 0.5rem; color: var(--tenue); font-size: .86rem; }
+  .cerca { margin: 0; padding: 0; list-style: none; }
+  .cerca li + li { border-top: 1px solid var(--linea); }
+  .cerca button { display: flex; align-items: center; gap: 0.75rem; width: 100%; min-height: 3rem; padding: 0.5rem 0.625rem; border: 0; border-radius: var(--radio-chico); background: transparent; color: var(--tinta); text-align: left; }
+  @media (hover: hover) { .cerca button:hover { background: var(--fondo); } }
+  .cerca button[aria-pressed="true"] { background: #e6eef9; box-shadow: inset 0.1875rem 0 0 var(--uni); }
+  .cerca .nom { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: .95rem; }
+  .cerca .nom em { margin-left: 0.375rem; padding: 2px 0.4375rem; border-radius: var(--radio-chico); background: var(--hoja-clara); color: #1f5c39; font-size: .75rem; font-style: normal; font-weight: 600; white-space: nowrap; }
+  .cerca .nom em.g { background: #e1e8ef; color: var(--tinta-2); }
+  .cerca .candado { width: 1.125rem; height: 1.125rem; color: var(--tenue); }
+  .cerca .otra { color: var(--uni); font-weight: 600; }
+  .senal { flex: none; width: 1.25rem; height: 1rem; }
+  .senal rect { fill: #c9d3dd; }
+  .senal.n1 rect:nth-child(-n+1), .senal.n2 rect:nth-child(-n+2), .senal.n3 rect:nth-child(-n+3), .senal.n4 rect { fill: var(--tinta-2); }
+  .senal.n1 rect:nth-child(-n+1) { fill: #b54708; }
+  #formWifi { margin-top: 0.75rem; padding: 1rem; border: 1px solid var(--linea); border-radius: var(--radio); background: #f7f9fb; }
+  #formWifi[hidden] { display: none; }
+  .elegida { display: flex; align-items: center; gap: 0.75rem; }
+  .elegida .ico { width: 1.5rem; height: 1.5rem; color: var(--uni); }
+  .elegida div { flex: 1; min-width: 0; }
+  .elegida span { display: block; color: var(--tenue); font-size: .8rem; }
+  .elegida b { display: block; overflow-wrap: anywhere; font-size: 1.02rem; }
+  .elegida[hidden], #wSsidCaja[hidden], #wClaveCaja[hidden] { display: none; }
+  .cambiar { flex: none; min-height: 2.125rem; padding: 0.25rem 0.625rem; border: 1px solid #b8c5d2; border-radius: 0.375rem; background: var(--superficie); color: var(--tinta); font-size: .82rem; font-weight: 600; }
+  .acciones2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; margin-top: 0.875rem; }
+  #wNota:empty { display: none; }
 
   /* ---------- Avisos ---------- */
   .alert {
@@ -414,6 +441,7 @@
     .il-et { display: none; }
   }
   @media (max-width: 440px) {
+    .acciones2 { grid-template-columns: 1fr; }
     .top .uni-placa { width: 2.75rem; }
     .nombre-app { font-size: .98rem; }
     .quien { max-width: 8.75rem; font-size: .78rem; }
@@ -458,6 +486,8 @@
   <symbol id="i-ojo" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></symbol>
   <symbol id="i-llave" viewBox="0 0 24 24"><circle cx="8" cy="15.5" r="4"/><path d="M10.9 12.6L20 3.5M16.5 7l2.5 2.5M14 9.5l2 2"/></symbol>
   <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M2.5 9.2a14 14 0 0 1 19 0"/><path d="M5.6 12.7a9.5 9.5 0 0 1 12.8 0"/><path d="M8.8 16.2a5 5 0 0 1 6.4 0"/><circle cx="12" cy="19.4" r="1" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-buscar" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.4 15.4l5.1 5.1"/></symbol>
+  <symbol id="i-candado" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.2 10.5V7.8a3.8 3.8 0 0 1 7.6 0v2.7"/></symbol>
   <symbol id="i-ruta" viewBox="0 0 24 24"><circle cx="5.5" cy="6" r="2.5"/><circle cx="18.5" cy="18" r="2.5"/><path d="M8 6h7.5a3 3 0 0 1 0 6h-7a3 3 0 0 0 0 6H16"/></symbol>
 </svg>
 
@@ -779,18 +809,35 @@
           </div>
           <h3 class="sub3">Redes guardadas</h3>
           <ul class="redes" id="wifiRedes"><li class="vacia">Esperando al ESP32…</li></ul>
-          <form id="formWifi" autocomplete="off">
-            <h3>Agregar una red</h3>
-            <label class="f" for="wSsid">Nombre de la red (SSID)</label>
-            <input type="text" id="wSsid" maxlength="32" autocapitalize="off" autocomplete="off" spellcheck="false">
-            <label class="f" for="wClave">Contraseña de la red</label>
-            <div class="clavecaja">
-              <input type="password" id="wClave" maxlength="63" autocomplete="new-password">
-              <button type="button" id="wVer" aria-controls="wClave">Mostrar</button>
+          <div class="cerca-cab">
+            <h3 class="sub3">Redes cercanas</h3>
+            <button class="btn sec chico" type="button" id="btnBuscar"><svg class="ico" aria-hidden="true"><use href="#i-buscar"/></svg><span>Buscar redes</span></button>
+          </div>
+          <p class="cerca-estado" id="cercaEstado" role="status">Toca «Buscar redes» y el ESP32 te mostrará las redes que tiene cerca.</p>
+          <ul class="cerca" id="wifiCerca"><li><button type="button" class="otra" data-otra="1">Otra red: escribir el nombre</button></li></ul>
+          <form id="formWifi" autocomplete="off" hidden>
+            <div class="elegida" id="wElegidaCaja">
+              <svg class="ico" aria-hidden="true"><use href="#i-wifi"/></svg>
+              <div><span>Red elegida</span><b id="wElegida"></b></div>
+              <button type="button" class="cambiar" id="wCambiar">Cambiar</button>
             </div>
-            <label class="chk"><input type="checkbox" id="wUsar"> Conectarse ahora a esta red</label>
-            <button class="btn full" type="submit" id="btnWifi">Guardar red</button>
-            <div class="hint">El ESP32 guarda hasta 5 redes y usa la primera que encuentre. Si no logra entrar a una red nueva en 20 segundos, vuelve a la que tenía.</div>
+            <div id="wSsidCaja">
+              <label class="f" for="wSsid">Nombre de la red (SSID)</label>
+              <input type="text" id="wSsid" maxlength="32" autocapitalize="off" autocomplete="off" spellcheck="false">
+            </div>
+            <div id="wClaveCaja">
+              <label class="f" for="wClave">Contraseña de la red</label>
+              <div class="clavecaja">
+                <input type="password" id="wClave" maxlength="63" autocomplete="new-password">
+                <button type="button" id="wVer" aria-controls="wClave">Mostrar</button>
+              </div>
+            </div>
+            <p class="hint" id="wNota"></p>
+            <div class="acciones2">
+              <button class="btn" type="submit" data-accion="usar">Conectar ahora</button>
+              <button class="btn sec" type="submit" data-accion="guardar">Solo guardar</button>
+            </div>
+            <div class="hint">El ESP32 guarda hasta 5 redes. Si no logra entrar a la red nueva en 20 segundos, vuelve a la que tenía.</div>
           </form>
         </section>
       </div>
@@ -849,6 +896,7 @@ const VISOR_USER = "visor";
 // se conecta directo a EMQX con esta cuenta de SOLO LECTURA.
 const VISOR_PASS = "verRiegoUNI2026";
 const T_ESTADO = "riego_uni/estado", T_CMD = "riego_uni/cmd", T_ONLINE = "riego_uni/online", T_HIST = "riego_uni/historial";
+const T_REDES = "riego_uni/redes";   // redes WiFi cercanas que encuentra el ESP32 (solo operadores)
 const GUARDADO = "riegoUniSesion";
 
 // ================== UTILIDADES ==================
@@ -879,13 +927,14 @@ function conectar(usuario, clave){
     cliente = c;
     c.on("connect", () => {
       chip("chipNube", "Nube: conectada", "ok");
-      c.subscribe([T_ESTADO, T_ONLINE, T_HIST], { qos: 1 });
+      c.subscribe(usuario === VISOR_USER ? [T_ESTADO, T_ONLINE, T_HIST] : [T_ESTADO, T_ONLINE, T_HIST, T_REDES], { qos: 1 });
       if (!listo) { listo = true; resolve(true); }
     });
     c.on("message", (topic, payload) => {
       const txt = payload.toString();
       if (topic === T_ONLINE) { espOnline = (txt === "1"); pintarConexion(); return; }
       let d; try { d = JSON.parse(txt); } catch(e){ return; }
+      if (topic === T_REDES) { recibirCercanas(d); return; }
       if (topic === T_ESTADO) { est = d; estRecibido = Date.now(); agregarVivo(d); pintar(d); }
       if (topic === T_HIST) { hist = d; dibujar(); }
     });
@@ -1187,11 +1236,116 @@ function pintarWifi(e){
     : '<li class="vacia">' + (redes ? "No hay redes guardadas." : "El ESP32 todavía no informa sus redes guardadas.") + "</li>";
   const lista = $("wifiRedes");
   if (lista.dataset.html !== html) { lista.dataset.html = html; lista.innerHTML = html; }
+  pintarCercanas();
 }
 
 function mostrarClaveWifi(visible){
   $("wClave").type = visible ? "text" : "password";
   $("wVer").textContent = visible ? "Ocultar" : "Mostrar";
+}
+
+// ================== REDES WIFI CERCANAS ==================
+let cercanas = null;            // [{s, r, k}] de la última búsqueda; null = todavía no se buscó
+let buscandoRedes = false, buscarTimer = null;
+let wifiElegida = null;         // red elegida de la lista; null = escribir el nombre a mano
+
+function nivelSenal(r){ return r > -60 ? 4 : r > -70 ? 3 : r > -80 ? 2 : 1; }
+function guardadasEsp(){ return Array.isArray(est?.redes) ? est.redes.filter(r => typeof r === "string") : []; }
+function estadoCercanas(texto){ $("cercaEstado").textContent = texto; }
+
+function botonBuscar(ocupado){
+  const b = $("btnBuscar");
+  b.disabled = ocupado;
+  b.querySelector("span").textContent = ocupado ? "Buscando…" : (cercanas ? "Buscar de nuevo" : "Buscar redes");
+}
+
+function buscarRedes(){
+  if (buscandoRedes) return;
+  if (!sesion) { toast("Inicia sesión para controlar"); return; }
+  if (!cliente || !cliente.connected) { toast("Sin conexión a la nube"); return; }
+  buscandoRedes = true;
+  botonBuscar(true);
+  estadoCercanas("Buscando redes cerca del ESP32… tarda unos segundos.");
+  enviar("wifi_scan");
+  clearTimeout(buscarTimer);
+  buscarTimer = setTimeout(() => {
+    buscandoRedes = false;
+    botonBuscar(false);
+    const enLinea = Date.now() - estRecibido < 20000 && espOnline !== false;
+    estadoCercanas(enLinea
+      ? "El ESP32 no respondió. Para buscar redes necesita el módulo wifi_redes.h actualizado."
+      : "El ESP32 está fuera de línea. Cuando se conecte, vuelve a buscar.");
+  }, 20000);
+}
+
+function recibirCercanas(d){
+  clearTimeout(buscarTimer);
+  buscandoRedes = false;
+  if (!d || d.error) {
+    botonBuscar(false);
+    estadoCercanas("El ESP32 no pudo buscar redes. Intenta de nuevo.");
+    return;
+  }
+  const vistas = Array.isArray(d.vistas) ? d.vistas.filter(v => v && typeof v.s === "string" && v.s) : [];
+  cercanas = vistas.map(v => ({ s: v.s, r: Number(v.r) || -100, k: v.k !== 0 })).sort((a, b) => b.r - a.r);
+  botonBuscar(false);
+  estadoCercanas(cercanas.length
+    ? (cercanas.length === 1 ? "1 red encontrada" : cercanas.length + " redes encontradas") + " a las " + hhmm(Date.now()) + ". Elige una y escribe su contraseña."
+    : "El ESP32 no encontró redes cerca. Acércalo al router o vuelve a buscar.");
+  pintarCercanas();
+}
+
+function pintarCercanas(){
+  const ul = $("wifiCerca");
+  if (!ul) return;
+  const enUso = typeof est?.ssid === "string" ? est.ssid : "";
+  const guardadas = guardadasEsp();
+  const filas = (cercanas || []).map((v, i) => {
+    const usada = v.s === enUso, guardada = guardadas.includes(v.s);
+    const etiqueta = usada ? "<em>En uso</em>" : guardada ? '<em class="g">Guardada</em>' : "";
+    const desc = v.s + ", señal " + calidadWifi(v.r) + (v.k ? ", con contraseña" : ", abierta") + (usada ? ", en uso" : guardada ? ", guardada" : "");
+    const sel = !!wifiElegida && wifiElegida.s === v.s;
+    return '<li><button type="button" data-i="' + i + '" aria-pressed="' + sel + '" aria-label="' + esc(desc) + '">'
+      + '<svg class="senal n' + nivelSenal(v.r) + '" viewBox="0 0 18 14" aria-hidden="true"><rect x="0" y="10" width="3" height="4" rx="1"/><rect x="5" y="7" width="3" height="7" rx="1"/><rect x="10" y="3.5" width="3" height="10.5" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg>'
+      + '<span class="nom">' + esc(v.s) + etiqueta + "</span>"
+      + (v.k ? '<svg class="ico candado" aria-hidden="true"><use href="#i-candado"/></svg>' : "")
+      + "</button></li>";
+  });
+  const otraSel = wifiElegida === null && !$("formWifi").hidden;
+  filas.push('<li><button type="button" class="otra" data-otra="1" aria-pressed="' + otraSel + '">Otra red: escribir el nombre</button></li>');
+  const html = filas.join("");
+  if (ul.dataset.html !== html) { ul.dataset.html = html; ul.innerHTML = html; }
+}
+
+function elegirRed(v){
+  wifiElegida = v;
+  const manual = v === null;
+  const guardada = !manual && guardadasEsp().includes(v.s);
+  const usada = !manual && typeof est?.ssid === "string" && est.ssid === v.s;
+  $("wElegidaCaja").hidden = manual;
+  $("wSsidCaja").hidden = !manual;
+  $("wElegida").textContent = manual ? "" : v.s;
+  $("wClaveCaja").hidden = !manual && !v.k;
+  $("wClave").value = "";
+  $("wClave").placeholder = guardada ? "Déjala vacía para usar la guardada" : "";
+  mostrarClaveWifi(false);
+  if (manual) $("wSsid").value = "";
+  $("wNota").textContent = manual ? "Para redes ocultas o que no salieron en la búsqueda. Si la red es abierta, deja la contraseña vacía."
+    : usada ? "El ESP32 ya está conectado a esta red. Escribe la contraseña solo si cambió."
+    : !v.k ? "Red abierta: no pide contraseña."
+    : guardada ? "Esta red ya está guardada. Escribe la contraseña solo si cambió."
+    : "";
+  $("formWifi").hidden = false;
+  pintarCercanas();
+  const foco = manual ? $("wSsid") : !$("wClaveCaja").hidden ? $("wClave") : $("formWifi").querySelector('[data-accion="usar"]');
+  foco.focus();
+}
+
+function cerrarFormWifi(){
+  $("formWifi").hidden = true;
+  wifiElegida = null;
+  $("wSsid").value = ""; $("wClave").value = ""; mostrarClaveWifi(false);
+  pintarCercanas();
 }
 
 // ================== CURVAS ==================
@@ -1325,15 +1479,39 @@ $("btnAjustes").addEventListener("click", () => {
 
 // ================== RED WIFI: EVENTOS ==================
 $("wVer").addEventListener("click", () => mostrarClaveWifi($("wClave").type === "password"));
+$("formWifi").addEventListener("click", ev => {
+  const b = ev.target.closest("[data-accion]");
+  if (b) $("formWifi").dataset.accion = b.dataset.accion;
+});
 $("formWifi").addEventListener("submit", ev => {
   ev.preventDefault();
-  const s = $("wSsid").value.trim(), p = $("wClave").value;
-  if (!s || s.length > 32) { toast("Escribe el nombre de la red (hasta 32 caracteres)"); return; }
-  if (p && (p.length < 8 || p.length > 63)) { toast("La contraseña WiFi debe tener entre 8 y 63 caracteres"); return; }
+  const accion = (ev.submitter && ev.submitter.dataset.accion) || $("formWifi").dataset.accion || "usar";
+  const usar = accion !== "guardar";
+  const manual = !wifiElegida;
+  const s = manual ? $("wSsid").value.trim() : wifiElegida.s;
+  const p = $("wClaveCaja").hidden ? "" : $("wClave").value;
+  const guardada = guardadasEsp().includes(s);
+  if (!s || s.length > 32) { toast("Escribe el nombre de la red (hasta 32 caracteres)"); $("wSsid").focus(); return; }
   if (/[\r\n]/.test(s + p)) { toast("El nombre y la contraseña no pueden tener saltos de línea"); return; }
-  const usar = $("wUsar").checked;
-  enviar((usar ? "wifi_usar=" : "wifi_add=") + s + "\n" + p, usar ? "Pidió al ESP32 conectarse a la red " + s : "Guardó la red WiFi " + s);
-  $("wSsid").value = ""; $("wClave").value = ""; $("wUsar").checked = false; mostrarClaveWifi(false);
+  if (p && (p.length < 8 || p.length > 63)) { toast("La contraseña WiFi debe tener entre 8 y 63 caracteres"); $("wClave").focus(); return; }
+  if (!p && !manual && wifiElegida.k && !guardada) { toast("Escribe la contraseña de " + s); $("wClave").focus(); return; }
+  // Sin contraseña y ya guardada: el ESP32 usa la clave que tiene.
+  const orden = (usar ? "wifi_usar=" : "wifi_add=") + s + (!p && guardada ? "" : "\n" + p);
+  enviar(orden, usar ? "Pidió al ESP32 conectarse a la red " + s : "Guardó la red WiFi " + s);
+  cerrarFormWifi();
+});
+$("btnBuscar").addEventListener("click", buscarRedes);
+$("wCambiar").addEventListener("click", () => {
+  cerrarFormWifi();
+  const primero = $("wifiCerca").querySelector("button");
+  if (primero) primero.focus();
+});
+$("wifiCerca").addEventListener("click", ev => {
+  const b = ev.target.closest("button");
+  if (!b) return;
+  if (b.dataset.otra) { elegirRed(null); return; }
+  const v = cercanas && cercanas[Number(b.dataset.i)];
+  if (v) elegirRed(v);
 });
 $("wifiRedes").addEventListener("click", ev => {
   const b = ev.target.closest(".quitar");

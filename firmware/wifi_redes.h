@@ -5,9 +5,12 @@
 //  Guarda hasta 5 redes en la memoria del ESP32 (Preferences) y atiende estas
 //  ordenes que manda el panel web por el tema riego_uni/cmd:
 //
+//    wifi_scan                   busca las redes cercanas y las publica en
+//                                riego_uni/redes (ver escaneo())
 //    wifi_add=<SSID>\n<clave>    guarda la red sin cambiar la conexion actual
 //    wifi_usar=<SSID>\n<clave>   la guarda y se conecta ya; si no entra en
 //                                20 s, vuelve a las redes que ya funcionaban
+//    wifi_usar=<SSID>            (sin clave) usa la clave que ya tiene guardada
 //    wifi_del=<SSID>             borra una red guardada (nunca borra la ultima)
 //
 //  Para que el panel muestre la red, agrega json() al estado que se publica:
@@ -24,13 +27,19 @@ namespace RedesWifi {
 const uint8_t  MAX_REDES     = 5;
 const uint32_t ESPERA_USAR   = 20000;  // ms para entrar a una red pedida desde el panel
 const uint32_t ESPERA_NORMAL = 12000;  // ms por red al arrancar o al reconectar
+const uint32_t ESPERA_BUSCAR = 15000;  // ms maximos para buscar redes cercanas
+const uint8_t  MAX_VISTAS    = 15;     // redes cercanas que se mandan al panel
+const unsigned MAX_JSON_VISTAS = 900;  // bytes; cabe en un buffer MQTT de 1024
 
 struct Red { String ssid; String clave; };
 
-Red     redes[MAX_REDES];
-uint8_t total = 0;
-Red     pendiente;
-bool    cambioPendiente = false;
+Red      redes[MAX_REDES];
+uint8_t  total = 0;
+Red      pendiente;
+bool     cambioPendiente = false;
+bool     busquedaPedida = false;
+bool     buscando = false;
+uint32_t buscandoDesde = 0;
 
 // ---------------------------------------------------------------- memoria
 inline void guardar() {
@@ -135,6 +144,10 @@ inline bool conectar(uint32_t msPorRed = ESPERA_NORMAL) {
 // separada en clave y valor (lo que esta antes y despues del primer '=').
 // Devuelve true si era una orden de WiFi.
 inline bool comando(const String& clave, const String& valor) {
+  if (clave == "wifi_scan") {  // la busqueda se hace en escaneo(), fuera de la funcion de MQTT
+    if (!buscando) busquedaPedida = true;
+    return true;
+  }
   if (clave != "wifi_add" && clave != "wifi_usar" && clave != "wifi_del") return false;
   if (clave == "wifi_del") {
     if (quitar(valor)) guardar();
@@ -143,6 +156,8 @@ inline bool comando(const String& clave, const String& valor) {
   int corte = valor.indexOf('\n');
   String ssid  = corte < 0 ? valor : valor.substring(0, corte);
   String pass  = corte < 0 ? String("") : valor.substring(corte + 1);
+  int guardada = buscar(ssid);
+  if (corte < 0 && guardada >= 0) pass = redes[guardada].clave;  // sin clave: usa la guardada
   if (ssid.length() == 0 || ssid.length() > 32 || pass.length() > 63) return true;  // datos invalidos
   if (clave == "wifi_add") {
     agregar(ssid, pass);
@@ -195,6 +210,74 @@ inline String json() {
     s += '"';
   }
   s += ']';
+  return s;
+}
+
+// ---------------------------------------------------------------- redes cercanas
+inline String errorBusqueda() { return String("{\"error\":1,\"vistas\":[]}"); }
+
+// Llamar en cada vuelta de loop(). Cuando termina una busqueda pedida con
+// wifi_scan, devuelve el JSON para publicar en riego_uni/redes; si no, "".
+//   {"vistas":[{"s":"Red UNI","r":-58,"k":1}, ...]}
+//   s = nombre, r = senal en dBm, k = 1 si la red pide clave
+// La busqueda no corta la conexion actual ni detiene el resto del programa.
+inline String escaneo() {
+  if (busquedaPedida && !buscando) {
+    busquedaPedida = false;
+    WiFi.scanDelete();
+    if (WiFi.scanNetworks(true) == WIFI_SCAN_FAILED) return errorBusqueda();
+    buscando = true;
+    buscandoDesde = millis();
+    return String("");
+  }
+  if (!buscando) return String("");
+  int16_t n = WiFi.scanComplete();
+  if (n == WIFI_SCAN_RUNNING && millis() - buscandoDesde < ESPERA_BUSCAR) return String("");
+  buscando = false;
+  if (n < 0) { WiFi.scanDelete(); return errorBusqueda(); }
+
+  // Una entrada por nombre (la de mejor senal); se omiten las redes ocultas.
+  const uint8_t TOPE = 40;
+  int16_t elegidas[TOPE];
+  uint8_t cuantas = 0;
+  for (int16_t i = 0; i < n; i++) {
+    String nombre = WiFi.SSID(i);
+    if (nombre.length() == 0) continue;
+    int igual = -1;
+    for (uint8_t j = 0; j < cuantas; j++) {
+      if (WiFi.SSID(elegidas[j]) == nombre) { igual = j; break; }
+    }
+    if (igual >= 0) {
+      if (WiFi.RSSI(i) > WiFi.RSSI(elegidas[igual])) elegidas[igual] = i;
+    } else if (cuantas < TOPE) {
+      elegidas[cuantas++] = i;
+    }
+  }
+  // De la senal mas fuerte a la mas debil.
+  for (uint8_t a = 1; a < cuantas; a++) {
+    int16_t x = elegidas[a];
+    int b = a - 1;
+    while (b >= 0 && WiFi.RSSI(elegidas[b]) < WiFi.RSSI(x)) { elegidas[b + 1] = elegidas[b]; b--; }
+    elegidas[b + 1] = x;
+  }
+
+  String s = "{\"vistas\":[";
+  uint8_t puestas = 0;
+  for (uint8_t j = 0; j < cuantas && puestas < MAX_VISTAS; j++) {
+    int16_t i = elegidas[j];
+    String e = "{\"s\":\"";
+    e += escapar(WiFi.SSID(i));
+    e += "\",\"r\":";
+    e += String((int)WiFi.RSSI(i));
+    e += ",\"k\":";
+    e += WiFi.encryptionType(i) == WIFI_AUTH_OPEN ? '0' : '1';
+    e += '}';
+    if (s.length() + e.length() + 3 > MAX_JSON_VISTAS) break;
+    if (puestas++) s += ',';
+    s += e;
+  }
+  s += "]}";
+  WiFi.scanDelete();
   return s;
 }
 

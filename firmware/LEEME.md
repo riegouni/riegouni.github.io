@@ -1,14 +1,26 @@
 # Redes WiFi del ESP32 desde el panel
 
-Con `wifi_redes.h`, el ESP32 guarda hasta 5 redes WiFi en su memoria. Los operadores pueden agregar, usar o quitar redes desde el panel (sección **Operación → Red WiFi del ESP32**).
+Con `wifi_redes.h`, el ESP32 guarda hasta 5 redes WiFi en su memoria. Desde el panel (sección **Operación → Red WiFi del ESP32**), los operadores pueden:
+
+- Tocar **Buscar redes**: el ESP32 busca las redes que tiene cerca y el panel las muestra con su señal.
+- Elegir una red de la lista y escribir solo la contraseña.
+- Quitar redes guardadas.
 
 ## Órdenes que manda el panel (tema `riego_uni/cmd`)
 
 | Orden | Qué hace |
 |---|---|
+| `wifi_scan` | Busca las redes cercanas y publica la lista en `riego_uni/redes`. No corta la conexión actual. |
 | `wifi_add=<SSID>` + salto de línea + `<clave>` | Guarda la red sin cambiar la conexión actual. |
 | `wifi_usar=<SSID>` + salto de línea + `<clave>` | La guarda y se conecta ya. Si no entra en 20 s, vuelve a las redes que funcionaban y deja la nueva de última. |
+| `wifi_usar=<SSID>` (sin salto de línea) | Se conecta a una red ya guardada con la clave que tiene. |
 | `wifi_del=<SSID>` | Borra la red. Nunca borra la última que queda. |
+
+La lista de redes cercanas que publica el ESP32 se ve así (`r` es la señal en dBm, `k` es 1 si la red pide contraseña):
+
+```json
+{"vistas":[{"s":"UNI-Feria","r":-52,"k":1},{"s":"Cafe UNI","r":-80,"k":0}]}
+```
 
 ## Cómo agregarlo a tu programa
 
@@ -43,6 +55,8 @@ Con `wifi_redes.h`, el ESP32 guarda hasta 5 redes WiFi en su memoria. Los operad
    ```cpp
    if (RedesWifi::procesar()) mqtt.disconnect();          // cambió la red: reconecta MQTT
    if (WiFi.status() != WL_CONNECTED) RedesWifi::conectar();
+   String vistas = RedesWifi::escaneo();                  // redes cercanas pedidas por el panel
+   if (vistas.length()) mqtt.publish("riego_uni/redes", vistas.c_str());
    ```
 
 5. En el JSON que publicas en `riego_uni/estado`, agrega esto justo antes de la `}` final:
@@ -51,13 +65,15 @@ Con `wifi_redes.h`, el ESP32 guarda hasta 5 redes WiFi en su memoria. Los operad
    estado += RedesWifi::json();   // agrega ,"ssid":"...","redes":[...]
    ```
 
-   El estado crece unos 150 bytes. Si usas PubSubClient, comprueba que `mqtt.setBufferSize(...)` alcance (por ejemplo 1024).
+   El estado crece unos 150 bytes y la lista de redes cercanas ocupa hasta 900 bytes. Si usas PubSubClient, pon `mqtt.setBufferSize(1024);` en `setup()`.
 
-## Antes de usarlo
+## Permisos en EMQX
 
-En EMQX (Access Control → Authorization), agrega una regla para que el usuario `visor` **no pueda suscribirse** a `riego_uni/cmd`. Las claves WiFi viajan cifradas por ese tema, pero hoy cualquier cuenta puede leerlo.
+El usuario `visor` (visitantes) solo puede suscribirse a `riego_uni/estado`, `riego_uni/online` y `riego_uni/historial`. Todo lo demás le está prohibido, también `riego_uni/cmd` (por donde viajan las claves WiFi) y `riego_uni/redes`. Los usuarios `control` y `esp32` no tienen reglas, así que pueden usar `riego_uni/redes` sin cambiar nada.
 
 ## Notas
 
+- Buscar redes tarda unos segundos y no detiene el riego.
 - Mientras prueba una red nueva, el ESP32 espera hasta 20 s y se pausa el resto del programa. Hazlo cuando no esté regando.
 - El panel nunca muestra las claves. El ESP32 solo informa los nombres de las redes.
+- Las redes ocultas no salen en la búsqueda. Para esas, usa **Otra red** en el panel y escribe el nombre a mano.

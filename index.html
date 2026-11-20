@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Riego Inteligente UNI</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 610 377%27%3E%3Cpath fill=%27%23063581%27 d=%27M0 0h610v377H0z%27/%3E%3Cpath fill=%27%23fff%27 d=%27M102 0h25v252h102V95h152v282h-25V126H254v157H102zM483 0h25v95h102v31H508v157h-25z%27/%3E%3C/svg%3E">
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#c89844">
 <meta name="description" content="Panel en vivo del Sistema de Riego Inteligente de la Universidad Nacional de Ingeniería (UNI): humedad del suelo, temperatura, nivel del tanque y estado del riego.">
 <script src="https://cdn.jsdelivr.net/npm/mqtt@5/dist/mqtt.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -15,8 +15,6 @@
 <style>
   :root {
     color-scheme: light;
-    --negro: #000000;
-    --negro-2: #16120e;
     --cafe: #907151;
     --cafe-oscuro: #6b5338;
     --ceramica: #cebda3;
@@ -32,7 +30,8 @@
     --fondo: #f4efe8;
     --superficie: #ffffff;
     --linea: #e2d7c7;
-    --tinta: #000000;
+    --tinta: #2b1f14;
+    --tinta-dorado: #3f2e1d;
     --tinta-2: #3f352a;
     --tenue: #6b5c4c;
     --radio-panel: 1rem;
@@ -49,7 +48,7 @@
   button, input { font: inherit; color: inherit; }
   button { cursor: pointer; }
   button:disabled { cursor: not-allowed; opacity: .5; }
-  :focus-visible { outline: 0.1875rem solid var(--dorado); outline-offset: 0.1875rem; }
+  :focus-visible { outline: 0.1875rem solid var(--verde-oscuro); outline-offset: 0.1875rem; }
   input[type="checkbox"] { width: 1.125rem; height: 1.125rem; accent-color: var(--verde); }
   .oculto { display: none !important; }
   .wrap { width: min(100% - 3rem, 77.5rem); margin-inline: auto; }
@@ -68,9 +67,9 @@
     gap: clamp(1.5rem, 4vh, 2.75rem);
     padding: clamp(1.5rem, 4.5vw, 4rem);
     background:
-      radial-gradient(120% 80% at 100% 0%, #2b2017 0%, transparent 60%),
-      var(--negro);
-    color: #f7f2ea;
+      radial-gradient(120% 80% at 100% 0%, #dcb877 0%, transparent 60%),
+      var(--dorado);
+    color: var(--tinta);
   }
   .uni-marca { display: flex; align-items: center; gap: 0.875rem; }
   .uni-placa {
@@ -84,7 +83,7 @@
   }
   .uni-logo { display: block; width: 100%; height: auto; }
   .uni-identidad { font-size: .92rem; font-weight: 600; line-height: 1.3; }
-  .uni-identidad small { display: block; margin-top: 0.1875rem; color: #cebda3; font-size: .82rem; font-weight: 400; }
+  .uni-identidad small { display: block; margin-top: 0.1875rem; color: var(--tinta-dorado); font-size: .82rem; font-weight: 500; }
   .portada h1 {
     margin: 0;
     font-family: var(--titulo);
@@ -93,10 +92,10 @@
     line-height: 1;
     letter-spacing: -.02em;
   }
-  .portada .sub { max-width: 44ch; margin: 1rem 0 0; color: #e6dccd; font-size: clamp(1rem, 1.3vw, 1.12rem); }
+  .portada .sub { max-width: 44ch; margin: 1rem 0 0; color: var(--tinta-dorado); font-size: clamp(1rem, 1.3vw, 1.12rem); }
   .ilustracion { margin-top: auto; }
   .ilustracion svg { display: block; width: 100%; height: auto; max-height: 52vh; }
-  .ilustracion figcaption { margin-top: 0.625rem; color: #b39a7d; font-size: .82rem; }
+  .ilustracion figcaption { margin-top: 0.625rem; color: var(--tinta-dorado); font-size: .82rem; }
 
   .ent { display: grid; align-content: center; min-width: 0; padding: clamp(1.25rem, 5vw, 4.5rem); }
   .acceso-card {
@@ -130,7 +129,7 @@
     color: var(--tinta-2);
     font-weight: 600;
   }
-  .perfil-opciones button[aria-pressed="true"] { background: var(--superficie); color: var(--verde-oscuro); box-shadow: 0 1px 2px #00000026, 0 0 0 1px var(--linea); }
+  .perfil-opciones button[aria-pressed="true"] { background: var(--superficie); color: var(--verde-oscuro); box-shadow: 0 1px 2px #2b1f1426, 0 0 0 1px var(--linea); }
   .perfil-info { margin-bottom: 1rem; color: var(--tinta-2); }
   .perfil-info h3 { margin: 0 0 0.25rem; color: var(--tinta); font-size: 1.05rem; }
   .perfil-info p { margin: 0; }
@@ -163,48 +162,48 @@
     padding: 0.625rem 1rem;
     border: 1px solid transparent;
     border-radius: 0.5rem;
-    background: var(--negro);
-    color: #fff;
+    background: var(--dorado);
+    color: var(--tinta);
     font-weight: 600;
     transition: background-color .15s;
   }
-  .btn:not(:disabled):hover { background: #2b2119; }
+  .btn:not(:disabled):hover { background: #d4a85a; }
   .btn.full { width: 100%; }
   .btn.sec { border-color: #cbbca4; background: var(--superficie); color: var(--tinta); }
   .btn.sec:not(:disabled):hover { background: var(--fondo); }
-  .btn.azul { background: var(--verde); color: #000; }
+  .btn.azul { background: var(--verde); color: var(--tinta); }
   .btn.azul:not(:disabled):hover { background: #24bf80; }
-  #btnVisitante { background: var(--verde); color: #000; }
+  #btnVisitante { background: var(--verde); color: var(--tinta); }
   #btnVisitante:hover { background: #24bf80; }
 
   /* ---------- Cabecera ---------- */
-  .barra-app { background: var(--negro); color: #f7f2ea; }
-  #app[data-perfil="operador"] .barra-app { box-shadow: inset 0 -0.1875rem 0 var(--dorado); }
+  .barra-app { background: var(--dorado); color: var(--tinta); }
+  #app[data-perfil="operador"] .barra-app { box-shadow: inset 0 -0.1875rem 0 var(--verde-oscuro); }
   .top { display: flex; align-items: center; gap: 0.875rem; min-height: 4.25rem; padding-block: 0.625rem; }
   .top .uni-placa { width: 3.25rem; padding: 0.375rem; border-radius: 0.375rem; }
   .nombre-app { flex: none; font-family: var(--titulo); font-size: 1.05rem; font-weight: 700; }
   .menu { display: flex; align-items: center; gap: clamp(0.875rem, 2.6vw, 1.875rem); margin-left: clamp(0.625rem, 3vw, 2.5rem); }
-  .menu a { padding-block: 0.5rem; color: #e6dccd; font-size: .92rem; font-weight: 500; text-decoration: none; }
-  .menu a:hover { color: #fff; text-decoration: underline; text-underline-offset: 0.375rem; }
+  .menu a { padding-block: 0.5rem; color: var(--tinta); font-size: .92rem; font-weight: 500; text-decoration: none; }
+  .menu a:hover { color: var(--tinta); text-decoration: underline; text-underline-offset: 0.375rem; }
   .usr { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-left: auto; }
-  .quien { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.375rem 0.625rem; border: 1px solid #cebda355; border-radius: var(--radio-chico); color: #f3ede4; font-size: .85rem; overflow-wrap: anywhere; }
-  #app[data-perfil="operador"] .quien { border-color: #c89844; color: #f3dfb4; }
-  #btnSesion { min-height: 2.5rem; padding: 0.375rem 0.875rem; border: 1px solid #cebda3aa; border-radius: 0.5rem; background: transparent; color: #fff; font-size: .88rem; font-weight: 600; }
-  #btnSesion:hover { background: #ffffff14; }
+  .quien { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.375rem 0.625rem; border: 1px solid #2b1f1440; border-radius: var(--radio-chico); color: var(--tinta); font-size: .85rem; overflow-wrap: anywhere; }
+  #app[data-perfil="operador"] .quien { border-color: var(--verde-oscuro); background: #ffffff59; color: var(--verde-oscuro); font-weight: 600; }
+  #btnSesion { min-height: 2.5rem; padding: 0.375rem 0.875rem; border: 1px solid #2b1f1466; border-radius: 0.5rem; background: transparent; color: var(--tinta); font-size: .88rem; font-weight: 600; }
+  #btnSesion:hover { background: #ffffff40; }
   .cabecera-panel {
     padding: clamp(1.875rem, 4.5vw, 3.5rem) 0 5.25rem;
     background:
-      linear-gradient(90deg, #000000 0%, #000000eb 38%, #000000a6 70%, #00000066 100%),
+      linear-gradient(90deg, #c89844 0%, #c89844f2 40%, #c89844a6 70%, #c8984433 100%),
       url("./assets/campo-riego.jpg") center 62% / cover no-repeat,
-      var(--negro);
-    color: #f7f2ea;
+      var(--dorado);
+    color: var(--tinta);
   }
-  .proyecto { margin: 0 0 0.375rem; color: var(--dorado); font-size: .92rem; font-weight: 500; }
+  .proyecto { margin: 0 0 0.375rem; color: var(--tinta-dorado); font-size: .92rem; font-weight: 600; }
   header h1 { margin: 0; font-family: var(--titulo); font-size: clamp(2.1rem, 4.6vw, 3.6rem); font-weight: 700; line-height: 1.05; letter-spacing: -.015em; }
-  header .sub { margin: 0.5rem 0 0; color: #e6dccd; }
+  header .sub { margin: 0.5rem 0 0; color: var(--tinta-dorado); }
   .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.375rem; }
-  .chip { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.375rem 0.625rem; border: 1px solid #cebda340; border-radius: var(--radio-chico); background: #000000b3; color: #f3ede4; font-size: .85rem; font-variant-numeric: tabular-nums; }
-  .chip i { width: 0.5rem; height: 0.5rem; flex: none; border-radius: 50%; background: var(--ceramica); }
+  .chip { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.375rem 0.625rem; border: 1px solid #2b1f1426; border-radius: var(--radio-chico); background: #fffaf0e6; color: var(--tinta); font-size: .85rem; font-variant-numeric: tabular-nums; }
+  .chip i { width: 0.5rem; height: 0.5rem; flex: none; border-radius: 50%; background: var(--cafe); }
   .chip.ok i { background: #1fa971; box-shadow: 0 0 0 0.1875rem #1fa97140; }
   .chip.bad i { background: #ff8a7a; box-shadow: 0 0 0 0.1875rem #ff8a7a33; }
   .chip.wait i { background: #c89844; }
@@ -222,8 +221,8 @@
   .card h2 .ico { width: 1.375rem; height: 1.375rem; color: var(--cafe); }
   .card h2 small { margin-left: auto; color: var(--tenue); font-size: .82rem; font-weight: 400; }
 
-  .estado-card { display: flex; flex-direction: column; border-color: #cebda333; background: var(--negro); color: #f7f2ea; }
-  .estado-card h2 .ico { color: var(--verde); }
+  .estado-card { display: flex; flex-direction: column; border-color: var(--dorado); background: #fbf4e6; color: var(--tinta); }
+  .estado-card h2 .ico { color: var(--verde-oscuro); }
   .estado { display: flex; align-items: center; gap: 1rem; min-width: 0; }
   .gota {
     position: relative;
@@ -232,27 +231,27 @@
     width: 4.5rem;
     aspect-ratio: 1;
     flex: none;
-    border: 1px solid #ffffff26;
+    border: 1px solid #c8984480;
     border-radius: 50%;
-    background: #1a1511;
-    color: var(--cafe);
+    background: #f3e3c3;
+    color: var(--cafe-oscuro);
   }
   .gota .ico { width: 2.125rem; height: 2.125rem; stroke-width: 1.6; }
-  .gota.on { background: var(--verde); color: #000; border-color: transparent; }
-  .gota.on .ico { fill: #00000026; }
+  .gota.on { background: var(--verde); color: var(--tinta); border-color: transparent; }
+  .gota.on .ico { fill: #2b1f1426; }
   .gota.on::after { content: ""; position: absolute; inset: -0.25rem; border: 2px solid var(--verde); border-radius: inherit; animation: pulso 1.8s ease-out infinite; }
   @keyframes pulso { to { transform: scale(1.18); opacity: 0; } }
   .estado b { display: block; font-family: var(--titulo); font-size: clamp(1.4rem, 2.4vw, 1.8rem); line-height: 1.15; }
-  .motivo { margin-top: 0.375rem; color: #e6dccd; font-size: .92rem; }
+  .motivo { margin-top: 0.375rem; color: var(--tinta-2); font-size: .92rem; }
   .badge, .tag { display: inline-flex; align-items: center; gap: 0.3125rem; padding: 0.1875rem 0.5625rem; border-radius: var(--radio-chico); font-size: .8rem; font-weight: 600; }
   .badge { margin-top: 0.625rem; background: var(--verde-claro); color: var(--verde-oscuro); }
   .badge.manual { background: var(--dorado-claro); color: var(--dorado-oscuro); }
   .badge.paro { background: var(--rojo-claro); color: #8a1c13; }
   .salidas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.625rem; margin-top: auto; padding-top: 1.25rem; }
-  .sal { position: relative; padding: 0.625rem 0.75rem 0.625rem 1.75rem; border: 1px solid #ffffff1f; border-radius: var(--radio); color: #cebda3; font-size: .82rem; line-height: 1.3; }
-  .sal::before { content: ""; position: absolute; left: 0.75rem; top: 0.9375rem; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: #4a3f33; }
-  .sal b { display: block; margin-top: 2px; color: #fff; font-size: .95rem; font-weight: 600; }
-  .sal.on { border-color: var(--verde); background: #1fa9712e; }
+  .sal { position: relative; padding: 0.625rem 0.75rem 0.625rem 1.75rem; border: 1px solid #c8984466; border-radius: var(--radio); background: var(--superficie); color: var(--tenue); font-size: .82rem; line-height: 1.3; }
+  .sal::before { content: ""; position: absolute; left: 0.75rem; top: 0.9375rem; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--ceramica); }
+  .sal b { display: block; margin-top: 2px; color: var(--tinta); font-size: .95rem; font-weight: 600; }
+  .sal.on { border-color: var(--verde); background: var(--verde-claro); }
   .sal.on::before { background: var(--verde); box-shadow: 0 0 0 0.1875rem #1fa97140; }
 
   .sens { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; overflow: hidden; border: 1px solid var(--linea); border-radius: var(--radio); background: var(--linea); }
@@ -288,7 +287,7 @@
   .rangos { gap: 2px; padding: 0.1875rem; border-radius: 0.5rem; background: var(--fondo); }
   .rangos button { min-height: 2.125rem; padding: 0.25rem 0.75rem; border: 0; border-radius: 0.375rem; background: transparent; color: var(--tinta-2); font-size: .85rem; font-weight: 500; }
   .rangos button:hover { color: var(--tinta); }
-  .rangos button.sel { background: var(--superficie); color: var(--tinta); font-weight: 600; box-shadow: 0 1px 2px #00000026; }
+  .rangos button.sel { background: var(--superficie); color: var(--tinta); font-weight: 600; box-shadow: 0 1px 2px #2b1f1426; }
   .resumen { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; margin-bottom: 1rem; overflow: hidden; border: 1px solid var(--linea); border-radius: var(--radio); background: var(--linea); }
   .resumen div { padding: 0.625rem 0.875rem; background: var(--superficie); color: var(--tenue); font-size: .84rem; }
   .resumen b { display: block; margin-top: 2px; color: var(--tinta); font-size: 1.15rem; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
@@ -305,7 +304,7 @@
   .seg button { display: inline-flex; align-items: center; justify-content: center; gap: 0.4375rem; min-height: 2.75rem; padding: 0.5rem 0.25rem; border: 0; border-radius: 0.4375rem; background: transparent; color: var(--tinta-2); font-size: .9rem; font-weight: 500; }
   .seg button .ico { width: 1.125rem; height: 1.125rem; }
   .seg button:hover { color: var(--tinta); }
-  .seg button.sel { background: var(--superficie); color: var(--verde-oscuro); font-weight: 600; box-shadow: 0 1px 2px #00000026; }
+  .seg button.sel { background: var(--superficie); color: var(--verde-oscuro); font-weight: 600; box-shadow: 0 1px 2px #2b1f1426; }
   .seg button.sel[data-modo="paro"] { color: var(--rojo); }
   .bloque { margin-top: 1.25rem; padding-top: 1.125rem; border-top: 1px solid var(--linea); }
   .bloque h3 { margin: 0 0 0.625rem; font-size: 1rem; font-weight: 600; }
@@ -336,6 +335,7 @@
     color: var(--alerta-tinta);
   }
   .alert.red { --alerta-borde: #b42318; --alerta-fondo: #fdecea; --alerta-tinta: #6e1610; }
+  .alert.amber .alert-icono { color: var(--tinta); }
   .alert.amber { --alerta-borde: #c89844; --alerta-fondo: #f8eedc; --alerta-tinta: #5c3f0c; }
   .alert.gray { --alerta-borde: #907151; --alerta-fondo: #f7f2ea; --alerta-tinta: #3f352a; }
   .alert-icono { display: grid; place-items: center; width: 1.875rem; height: 1.875rem; border-radius: 50%; background: var(--alerta-borde); color: #fff; font-size: 1rem; font-weight: 700; }
@@ -350,11 +350,11 @@
   .paso:not(:last-child)::after { content: ""; position: absolute; left: 1.5625rem; top: 3.375rem; bottom: 0.375rem; width: 2px; background: repeating-linear-gradient(to bottom, var(--dorado) 0 0.25rem, transparent 0.25rem 0.5625rem); }
   .paso-icono { position: relative; display: grid; place-items: center; width: 3.25rem; height: 3.25rem; border-radius: 50%; background: var(--ceramica-clara); color: var(--cafe-oscuro); }
   .paso-icono .ico { width: 1.625rem; height: 1.625rem; }
-  .paso-icono::after { content: counter(paso); position: absolute; right: -0.25rem; top: -0.25rem; display: grid; place-items: center; width: 1.375rem; height: 1.375rem; border: 2px solid var(--superficie); border-radius: 50%; background: var(--negro); color: #fff; font-size: .75rem; font-weight: 700; }
+  .paso-icono::after { content: counter(paso); position: absolute; right: -0.25rem; top: -0.25rem; display: grid; place-items: center; width: 1.375rem; height: 1.375rem; border: 2px solid var(--superficie); border-radius: 50%; background: var(--dorado); color: var(--tinta); font-size: .75rem; font-weight: 700; }
   .paso h3 { margin: 0.25rem 0 2px; font-size: 1rem; font-weight: 600; }
   .paso p { margin: 0; color: var(--tinta-2); font-size: .9rem; }
 
-  .toast { position: fixed; bottom: 1.375rem; left: 50%; z-index: 30; max-width: 90vw; padding: 0.75rem 1.125rem; border-radius: var(--radio); transform: translate(-50%, 1.875rem); background: var(--negro); color: #fff; opacity: 0; pointer-events: none; text-align: center; font-size: .92rem; transition: .25s; }
+  .toast { position: fixed; bottom: 1.375rem; left: 50%; z-index: 30; max-width: 90vw; padding: 0.75rem 1.125rem; border-radius: var(--radio); transform: translate(-50%, 1.875rem); background: #5a4329; color: #fff; opacity: 0; pointer-events: none; text-align: center; font-size: .92rem; transition: .25s; }
   .toast.show { opacity: 1; transform: translate(-50%, 0); }
   footer { padding: 0.5rem 1rem 2rem; color: var(--tenue); text-align: center; font-size: .85rem; }
 
@@ -373,15 +373,15 @@
     .cols { grid-template-columns: minmax(18.75rem, 1fr) minmax(0, 2.3fr); }
   }
   @media (max-width: 980px) {
-    #entrada { display: flex; flex-direction: column; background: var(--negro); }
+    #entrada { display: flex; flex-direction: column; background: var(--dorado); }
     .portada { display: contents; }
     .uni-marca { order: 1; padding: 1.375rem 1.375rem 0; }
     .portada-texto { order: 2; padding: 1.375rem 1.375rem 1.75rem; }
     .ent { order: 3; background: var(--fondo); }
-    .ilustracion { order: 4; margin: 0; padding: 1.625rem 1.375rem 1.875rem; color: #f7f2ea; }
+    .ilustracion { order: 4; margin: 0; padding: 1.625rem 1.375rem 1.875rem; color: var(--tinta); }
     .ilustracion svg { max-height: none; }
     .top { flex-wrap: wrap; row-gap: 0.25rem; }
-    .menu { order: 1; width: 100%; margin-left: 0; padding-top: 0.25rem; border-top: 1px solid #ffffff1f; }
+    .menu { order: 1; width: 100%; margin-left: 0; padding-top: 0.25rem; border-top: 1px solid #2b1f1426; }
   }
   @media (max-width: 760px) {
     .wrap { width: calc(100% - 1.75rem); }
@@ -456,111 +456,111 @@
         <title id="ilusTitulo">Cómo está armado el sistema de riego</title>
         <desc id="ilusDesc">Un tanque con sensor ultrasónico alimenta una línea de goteo. Un sensor de humedad en el suelo envía la lectura por radio a un ESP32, que la publica en la nube EMQX, y el panel web la muestra.</desc>
         <defs>
-          <linearGradient id="ilSuelo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b2119"/><stop offset="1" stop-color="#17110c"/></linearGradient>
+          <linearGradient id="ilSuelo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#907151"/><stop offset="1" stop-color="#7a5e42"/></linearGradient>
           <radialGradient id="ilHumedo" cx=".5" cy=".35" r=".6"><stop offset="0" stop-color="#1fa971" stop-opacity=".42"/><stop offset="1" stop-color="#1fa971" stop-opacity="0"/></radialGradient>
           <clipPath id="ilClipTanque"><rect x="42" y="168" width="106" height="130" rx="10"/></clipPath>
           <g id="ilPlanta">
-            <path d="M0 0C0-18 2-38 0-64" stroke="#5cc795" stroke-width="3" fill="none" stroke-linecap="round"/>
-            <ellipse cx="-14" cy="-20" rx="15" ry="6" transform="rotate(-24 -14 -20)" fill="#1fa971"/>
-            <ellipse cx="15" cy="-33" rx="16" ry="6.5" transform="rotate(24 15 -33)" fill="#168a5b"/>
-            <ellipse cx="-12" cy="-47" rx="13" ry="5.5" transform="rotate(-30 -12 -47)" fill="#5cc795"/>
-            <ellipse cx="10" cy="-59" rx="10" ry="4.5" transform="rotate(32 10 -59)" fill="#1fa971"/>
-            <path d="M0 3C-6 15-10 23-15 31M0 3C5 17 9 25 13 35M0 3v37" stroke="#4a3a2a" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+            <path d="M0 0C0-18 2-38 0-64" stroke="#2f9e6c" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <ellipse cx="-14" cy="-20" rx="15" ry="6" transform="rotate(-24 -14 -20)" fill="#137a50"/>
+            <ellipse cx="15" cy="-33" rx="16" ry="6.5" transform="rotate(24 15 -33)" fill="#0f5c3c"/>
+            <ellipse cx="-12" cy="-47" rx="13" ry="5.5" transform="rotate(-30 -12 -47)" fill="#2f9e6c"/>
+            <ellipse cx="10" cy="-59" rx="10" ry="4.5" transform="rotate(32 10 -59)" fill="#137a50"/>
+            <path d="M0 3C-6 15-10 23-15 31M0 3C5 17 9 25 13 35M0 3v37" stroke="#5a4329" stroke-width="1.6" fill="none" stroke-linecap="round"/>
           </g>
           <path id="ilGotita" d="M0-4c2.2 2.8 3.4 4.6 3.4 6.1a3.4 3.4 0 0 1-6.8 0C-3.4.6-2.2-1.2 0-4z" fill="#1fa971"/>
         </defs>
 
         <!-- suelo -->
         <rect x="0" y="340" width="720" height="130" fill="url(#ilSuelo)"/>
-        <path d="M0 340H720" stroke="#6b5338" stroke-width="1.5"/>
-        <path d="M0 385H720M0 430H720" stroke="#3a2d21" stroke-width="1.2" stroke-dasharray="2 9"/>
+        <path d="M0 340H720" stroke="#5a4329" stroke-width="1.5"/>
+        <path d="M0 385H720M0 430H720" stroke="#6b5338" stroke-width="1.2" stroke-dasharray="2 9"/>
         <ellipse cx="314" cy="372" rx="46" ry="32" fill="url(#ilHumedo)"/>
         <ellipse cx="404" cy="372" rx="46" ry="32" fill="url(#ilHumedo)"/>
         <ellipse cx="574" cy="372" rx="46" ry="32" fill="url(#ilHumedo)"/>
         <ellipse cx="654" cy="372" rx="46" ry="32" fill="url(#ilHumedo)"/>
 
         <!-- nube y panel -->
-        <path d="M454 86h92a24 24 0 0 0 2.5-47.9 36 36 0 0 0-68.6 7.4A20.5 20.5 0 0 0 454 86z" fill="#1a1511" stroke="#cebda3" stroke-width="2"/>
+        <path d="M454 86h92a24 24 0 0 0 2.5-47.9 36 36 0 0 0-68.6 7.4A20.5 20.5 0 0 0 454 86z" fill="#fbf6ee" stroke="#4a3622" stroke-width="2"/>
         <path d="M486 64l8 8 16-16" stroke="#1fa971" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>
-        <text class="il-et" x="500" y="112" text-anchor="middle" fill="#cebda3" font-family="Fira Sans, sans-serif" font-size="13">Nube EMQX (MQTT con TLS)</text>
-        <rect x="636" y="26" width="58" height="104" rx="10" fill="#1a1511" stroke="#cebda3" stroke-width="2"/>
-        <rect x="642" y="38" width="46" height="78" rx="4" fill="#000000"/>
+        <text class="il-et" x="500" y="112" text-anchor="middle" fill="#4a3622" font-family="Fira Sans, sans-serif" font-size="13">Nube EMQX (MQTT con TLS)</text>
+        <rect x="636" y="26" width="58" height="104" rx="10" fill="#fbf6ee" stroke="#4a3622" stroke-width="2"/>
+        <rect x="642" y="38" width="46" height="78" rx="4" fill="#3b2c1e"/>
         <rect x="648" y="92" width="6" height="18" rx="1.5" fill="#1fa971"/>
         <rect x="658" y="78" width="6" height="32" rx="1.5" fill="#1fa971"/>
         <rect x="668" y="85" width="6" height="25" rx="1.5" fill="#c89844"/>
         <rect x="678" y="70" width="6" height="40" rx="1.5" fill="#1fa971"/>
         <circle cx="665" cy="54" r="9" fill="none" stroke="#1fa971" stroke-width="3" stroke-dasharray="40 57" transform="rotate(-90 665 54)"/>
-        <text class="il-et" x="665" y="150" text-anchor="middle" fill="#cebda3" font-family="Fira Sans, sans-serif" font-size="13">Panel web</text>
-        <path d="M550 62H628" stroke="#a8906f" stroke-width="2" stroke-dasharray="3 6" fill="none"/>
-        <path d="M286 120C318 70 380 52 448 60" stroke="#a8906f" stroke-width="2" stroke-dasharray="3 6" fill="none"/>
+        <text class="il-et" x="665" y="150" text-anchor="middle" fill="#4a3622" font-family="Fira Sans, sans-serif" font-size="13">Panel web</text>
+        <path d="M550 62H628" stroke="#5a4329" stroke-width="2" stroke-dasharray="3 6" fill="none"/>
+        <path d="M286 120C318 70 380 52 448 60" stroke="#5a4329" stroke-width="2" stroke-dasharray="3 6" fill="none"/>
 
         <!-- tanque -->
-        <path d="M62 300l-6 40M128 300l6 40M58 322h74" stroke="#907151" stroke-width="3" stroke-linecap="round" fill="none"/>
-        <rect x="42" y="168" width="106" height="130" rx="10" fill="#14100c"/>
+        <path d="M62 300l-6 40M128 300l6 40M58 322h74" stroke="#5a4329" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <rect x="42" y="168" width="106" height="130" rx="10" fill="#fbf6ee"/>
         <g clip-path="url(#ilClipTanque)">
           <rect x="42" y="214" width="106" height="90" fill="#1fa971"/>
           <path d="M42 214q13-6 26 0t26 0 26 0 28 0" stroke="#7fe0b6" stroke-width="2.4" fill="none"/>
         </g>
-        <rect x="42" y="168" width="106" height="130" rx="10" fill="none" stroke="#cebda3" stroke-width="2"/>
-        <path d="M136 196h8M136 240h8M136 280h8" stroke="#cebda3" stroke-width="1.6"/>
-        <rect x="70" y="150" width="50" height="16" rx="3" fill="#3a2d21" stroke="#cebda3" stroke-width="1.5"/>
-        <circle cx="84" cy="158" r="5" fill="#000000" stroke="#cebda3" stroke-width="1.5"/>
-        <circle cx="106" cy="158" r="5" fill="#000000" stroke="#cebda3" stroke-width="1.5"/>
-        <path d="M84 168v40M106 168v40" stroke="#7fe0b6" stroke-width="1.6" stroke-dasharray="3 5"/>
-        <text class="il-et" x="95" y="122" text-anchor="middle" fill="#f3ede4" font-family="Fira Sans, sans-serif" font-size="13" font-weight="600">Tanque</text>
-        <text class="il-et" x="95" y="138" text-anchor="middle" fill="#a8906f" font-family="Fira Sans, sans-serif" font-size="12">sensor ultrasónico</text>
+        <rect x="42" y="168" width="106" height="130" rx="10" fill="none" stroke="#4a3622" stroke-width="2"/>
+        <path d="M136 196h8M136 240h8M136 280h8" stroke="#4a3622" stroke-width="1.6"/>
+        <rect x="70" y="150" width="50" height="16" rx="3" fill="#6b5338" stroke="#4a3622" stroke-width="1.5"/>
+        <circle cx="84" cy="158" r="5" fill="#3b2c1e" stroke="#4a3622" stroke-width="1.5"/>
+        <circle cx="106" cy="158" r="5" fill="#3b2c1e" stroke="#4a3622" stroke-width="1.5"/>
+        <path d="M84 168v40M106 168v40" stroke="#137a50" stroke-width="1.6" stroke-dasharray="3 5"/>
+        <text class="il-et" x="95" y="122" text-anchor="middle" fill="#2b1f14" font-family="Fira Sans, sans-serif" font-size="13" font-weight="600">Tanque</text>
+        <text class="il-et" x="95" y="138" text-anchor="middle" fill="#5a4329" font-family="Fira Sans, sans-serif" font-size="12">sensor ultrasónico</text>
 
         <!-- tubería de goteo y relé -->
-        <path d="M148 286H178M212 286h12v46H708" stroke="#907151" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-        <rect x="178" y="274" width="34" height="24" rx="4" fill="#2b2119" stroke="#cebda3" stroke-width="1.5"/>
+        <path d="M148 286H178M212 286h12v46H708" stroke="#5a4329" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="178" y="274" width="34" height="24" rx="4" fill="#907151" stroke="#4a3622" stroke-width="1.5"/>
         <circle cx="195" cy="286" r="4" fill="#1fa971"/>
-        <text class="il-et" x="195" y="316" text-anchor="middle" fill="#a8906f" font-family="Fira Sans, sans-serif" font-size="12">Relé</text>
+        <text class="il-et" x="195" y="316" text-anchor="middle" fill="#5a4329" font-family="Fira Sans, sans-serif" font-size="12">Relé</text>
 
         <!-- ESP32 -->
-        <path d="M262 206v134" stroke="#907151" stroke-width="3" stroke-linecap="round"/>
-        <path d="M232 206c-2 30-22 50-37 68" stroke="#c89844" stroke-width="1.6" fill="none"/>
-        <path d="M226 176c-36-8-70-18-106-18" stroke="#c89844" stroke-width="1.6" fill="none"/>
-        <rect x="222" y="160" width="80" height="48" rx="6" fill="#241c15" stroke="#cebda3" stroke-width="1.5"/>
-        <rect x="244" y="171" width="30" height="24" rx="2" fill="#000000" stroke="#907151"/>
-        <path d="M249 171v-4M256 171v-4M263 171v-4M270 171v-4M249 195v4M256 195v4M263 195v4M270 195v4" stroke="#907151" stroke-width="1.2"/>
-        <rect x="306" y="168" width="14" height="22" rx="2" fill="#907151"/>
-        <path d="M309 173h8M309 178h8M309 183h8" stroke="#cebda3" stroke-width="1"/>
+        <path d="M262 206v134" stroke="#5a4329" stroke-width="3" stroke-linecap="round"/>
+        <path d="M232 206c-2 30-22 50-37 68" stroke="#5a4329" stroke-width="1.6" fill="none"/>
+        <path d="M226 176c-36-8-70-18-106-18" stroke="#5a4329" stroke-width="1.6" fill="none"/>
+        <rect x="222" y="160" width="80" height="48" rx="6" fill="#f7f0e3" stroke="#4a3622" stroke-width="1.5"/>
+        <rect x="244" y="171" width="30" height="24" rx="2" fill="#3b2c1e" stroke="#5a4329"/>
+        <path d="M249 171v-4M256 171v-4M263 171v-4M270 171v-4M249 195v4M256 195v4M263 195v4M270 195v4" stroke="#5a4329" stroke-width="1.2"/>
+        <rect x="306" y="168" width="14" height="22" rx="2" fill="#5a4329"/>
+        <path d="M309 173h8M309 178h8M309 183h8" stroke="#4a3622" stroke-width="1"/>
         <circle cx="313" cy="200" r="4.5" fill="#c89844"/>
-        <path d="M290 160v-34" stroke="#cebda3" stroke-width="2" stroke-linecap="round"/>
-        <circle cx="290" cy="124" r="3.5" fill="#cebda3"/>
-        <text class="il-et" x="274" y="230" fill="#f3ede4" font-family="Fira Sans, sans-serif" font-size="13" font-weight="600">ESP32</text>
-        <text class="il-et" x="274" y="246" fill="#a8906f" font-family="Fira Sans, sans-serif" font-size="12">DHT11 y LDR</text>
+        <path d="M290 160v-34" stroke="#4a3622" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="290" cy="124" r="3.5" fill="#4a3622"/>
+        <text class="il-et" x="274" y="230" fill="#2b1f14" font-family="Fira Sans, sans-serif" font-size="13" font-weight="600">ESP32</text>
+        <text class="il-et" x="274" y="246" fill="#5a4329" font-family="Fira Sans, sans-serif" font-size="12">DHT11 y LDR</text>
 
         <!-- cultivo -->
         <use href="#ilPlanta" x="330" y="340"/>
         <use href="#ilPlanta" x="420" y="340"/>
         <use href="#ilPlanta" x="590" y="340"/>
         <use href="#ilPlanta" x="670" y="340"/>
-        <circle cx="314" cy="332" r="3.5" fill="#cebda3"/>
-        <circle cx="404" cy="332" r="3.5" fill="#cebda3"/>
-        <circle cx="574" cy="332" r="3.5" fill="#cebda3"/>
-        <circle cx="654" cy="332" r="3.5" fill="#cebda3"/>
+        <circle cx="314" cy="332" r="3.5" fill="#4a3622"/>
+        <circle cx="404" cy="332" r="3.5" fill="#4a3622"/>
+        <circle cx="574" cy="332" r="3.5" fill="#4a3622"/>
+        <circle cx="654" cy="332" r="3.5" fill="#4a3622"/>
         <use href="#ilGotita" class="gotita" x="314" y="342"/>
         <use href="#ilGotita" class="gotita" x="404" y="342" style="animation-delay:.6s"/>
         <use href="#ilGotita" class="gotita" x="574" y="342" style="animation-delay:1.2s"/>
         <use href="#ilGotita" class="gotita" x="654" y="342" style="animation-delay:1.8s"/>
 
         <!-- sensor de suelo y Arduino -->
-        <path d="M458 336v62M470 336v62" stroke="#c89844" stroke-width="4" stroke-linecap="round"/>
-        <rect x="453" y="306" width="22" height="30" rx="3" fill="#241c15" stroke="#cebda3" stroke-width="1.5"/>
-        <path d="M475 316c8 0 10-8 18-10" stroke="#c89844" stroke-width="1.6" fill="none"/>
-        <rect x="492" y="268" width="60" height="40" rx="6" fill="#241c15" stroke="#cebda3" stroke-width="1.5"/>
-        <rect x="502" y="278" width="22" height="20" rx="2" fill="#000000" stroke="#907151"/>
+        <path d="M458 336v62M470 336v62" stroke="#f0d9a8" stroke-width="4" stroke-linecap="round"/>
+        <rect x="453" y="306" width="22" height="30" rx="3" fill="#f7f0e3" stroke="#4a3622" stroke-width="1.5"/>
+        <path d="M475 316c8 0 10-8 18-10" stroke="#5a4329" stroke-width="1.6" fill="none"/>
+        <rect x="492" y="268" width="60" height="40" rx="6" fill="#f7f0e3" stroke="#4a3622" stroke-width="1.5"/>
+        <rect x="502" y="278" width="22" height="20" rx="2" fill="#3b2c1e" stroke="#5a4329"/>
         <rect x="530" y="282" width="14" height="12" rx="2" fill="#1fa971"/>
-        <path d="M544 268v-24" stroke="#cebda3" stroke-width="2" stroke-linecap="round"/>
-        <circle cx="544" cy="242" r="3.5" fill="#cebda3"/>
-        <path d="M536 232a12 12 0 0 1 16 0M531 225a20 20 0 0 1 26 0" stroke="#1fa971" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-        <path d="M282 116a12 12 0 0 1 16 0" stroke="#1fa971" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-        <path id="ilRadio" d="M300 124C380 130 470 170 534 238" stroke="#1fa971" stroke-width="2" stroke-dasharray="1 7" stroke-linecap="round" fill="none"/>
-        <text class="il-et" dy="-9" fill="#7fe0b6" font-family="Fira Sans, sans-serif" font-size="12"><textPath href="#ilRadio" startOffset="50%" text-anchor="middle">Radio nRF24L01, 2,4 GHz</textPath></text>
-        <text class="il-et" x="464" y="420" text-anchor="middle" fill="#cebda3" font-family="Fira Sans, sans-serif" font-size="13">Sensor de humedad YL-69</text>
-        <text class="il-et" x="500" y="258" text-anchor="middle" fill="#a8906f" font-family="Fira Sans, sans-serif" font-size="12">Arduino UNO</text>
-        <text class="il-et" x="700" y="456" text-anchor="end" fill="#907151" font-family="Fira Sans, sans-serif" font-size="12">Línea de goteo</text>
+        <path d="M544 268v-24" stroke="#4a3622" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="544" cy="242" r="3.5" fill="#4a3622"/>
+        <path d="M536 232a12 12 0 0 1 16 0M531 225a20 20 0 0 1 26 0" stroke="#0f5c3c" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        <path d="M282 116a12 12 0 0 1 16 0" stroke="#0f5c3c" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        <path id="ilRadio" d="M300 124C380 130 470 170 534 238" stroke="#0f5c3c" stroke-width="2" stroke-dasharray="1 7" stroke-linecap="round" fill="none"/>
+        <text class="il-et" dy="-9" fill="#0f5c3c" font-family="Fira Sans, sans-serif" font-size="12" font-weight="600"><textPath href="#ilRadio" startOffset="50%" text-anchor="middle">Radio nRF24L01, 2,4 GHz</textPath></text>
+        <text class="il-et" x="464" y="420" text-anchor="middle" fill="#fbf1dc" font-family="Fira Sans, sans-serif" font-size="13">Sensor de humedad YL-69</text>
+        <text class="il-et" x="500" y="258" text-anchor="middle" fill="#5a4329" font-family="Fira Sans, sans-serif" font-size="12">Arduino UNO</text>
+        <text class="il-et" x="700" y="456" text-anchor="end" fill="#f3e3c3" font-family="Fira Sans, sans-serif" font-size="12">Línea de goteo</text>
       </svg>
       <figcaption>El sensor del suelo habla por radio con el ESP32, y el ESP32 publica las lecturas en la nube cada 5 segundos.</figcaption>
     </figure>
@@ -1178,10 +1178,10 @@ function dibujar(){
   }];
   let nota = "";
   if (variable === "s" && est) {
-    ds.push({ label: "Límite de riego", data: datos.map(() => est.slim), type: "line", borderColor: "#000000", borderDash: [6, 5], borderWidth: 1.5, pointRadius: 0, pointHitRadius: 0, fill: false });
+    ds.push({ label: "Límite de riego", data: datos.map(() => est.slim), type: "line", borderColor: "#2b1f14", borderDash: [6, 5], borderWidth: 1.5, pointRadius: 0, pointHitRadius: 0, fill: false });
     nota = "La línea punteada es el límite: por debajo de " + est.slim + " % el sistema riega en modo automático.";
   } else if (variable === "t" && est) {
-    ds.push({ label: "Temperatura límite", data: datos.map(() => est.tlim), type: "line", borderColor: "#000000", borderDash: [6, 5], borderWidth: 1.5, pointRadius: 0, pointHitRadius: 0, fill: false });
+    ds.push({ label: "Temperatura límite", data: datos.map(() => est.tlim), type: "line", borderColor: "#2b1f14", borderDash: [6, 5], borderWidth: 1.5, pointRadius: 0, pointHitRadius: 0, fill: false });
     nota = "La línea punteada es la temperatura límite (" + est.tlim + " °C).";
   } else if (variable === "r") nota = rango === "vivo" ? "100 % significa que estaba regando en ese momento." : "Porcentaje de cada intervalo de 5 minutos que estuvo regando.";
   else if (variable === "n") nota = "100 % es el tanque lleno (agua a 5 cm del sensor) y 0 % es vacío (30 cm).";
@@ -1195,7 +1195,7 @@ function dibujar(){
     interaction: { mode: "index", intersect: false },
     plugins: {
       legend: { display: false },
-      tooltip: { backgroundColor: "#000000", padding: 10, displayColors: false,
+      tooltip: { backgroundColor: "#5a4329", padding: 10, displayColors: false,
         callbacks: { label: c => c.raw == null ? c.dataset.label + ": sin dato" : c.dataset.label + ": " + (+c.raw).toFixed(v.dec) + " " + v.uni } }
     },
     scales: {
